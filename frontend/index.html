@@ -10,13 +10,16 @@
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+    <!-- Visualization Support -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 </head>
 
 <body>
     <div class="glass-container">
-        <aside class="sidebar">
+        <!-- Navigation Sidebar (Left) -->
+        <aside class="sidebar main-nav">
             <div class="brand">
-                <span class="dot"></span>
+                <span class="dot pulse"></span>
                 <h1>DBAgent</h1>
             </div>
             <nav>
@@ -35,24 +38,28 @@
                 <div class="status healthy">Healthy</div>
             </div>
         </aside>
+
+        <!-- Chat Area (Center) -->
         <main class="chat-area">
             <header>
-                <h2>Agentic Shell</h2>
-                <div class="agent-info">
-                    <span class="online-indicator"></span>
-                    <span>Orchestrator Agent</span>
+                <div class="header-content">
+                    <h2>Agentic Intelligence</h2>
+                    <div class="agent-info">
+                        <span class="online-indicator"></span>
+                        <span>Omni Orchestrator</span>
+                    </div>
                 </div>
+                <button id="clear-btn" title="Clear Conversation">🗑️</button>
             </header>
             <div id="chat-messages" class="messages">
-                <!-- Messages will appear here -->
                 <div class="message agent animate-fade-in">
                     <div class="avatar">O</div>
-                    <div class="text">Welcome to the Database Agentic System. How can I assist you with your data today?
-                    </div>
+                    <div class="text">Welcome to the Database Agentic System. I'm connected to your data and ready to
+                        assist. Try asking for a high-level status report or to visualize some data!</div>
                 </div>
             </div>
             <div class="input-container">
-                <input type="text" id="user-input" placeholder="Type a message or command..." autocomplete="off">
+                <input type="text" id="user-input" placeholder="Ask about your data..." autocomplete="off">
                 <button id="send-btn">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
@@ -60,6 +67,19 @@
                 </button>
             </div>
         </main>
+
+        <!-- Reasoning Sidebar (Right) -->
+        <aside class="sidebar reasoning-sidebar" id="reasoning-sidebar">
+            <div class="sidebar-header">
+                <h3>Agent Thought Process</h3>
+            </div>
+            <div id="reasoning-steps" class="reasoning-steps">
+                <div class="empty-state">
+                    <i>🧠</i>
+                    <p>Agent reasoning steps will appear here in real-time...</p>
+                </div>
+            </div>
+        </aside>
     </div>
     <script src="app.js"></script>
 </body>

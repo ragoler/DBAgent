@@ -36,16 +36,23 @@ class AgentManager:
     async def chat_stream(self, user_id: str, session_id: str, message: str) -> AsyncGenerator[str, None]:
         """
         Streams responses from the runner back to the UI.
+        Yields JSON-encoded strings for structured handling in the frontend.
         """
+        import json
         async for chunk in self.runner.run_stream(user_id=user_id, session_id=session_id, message=message):
+            data = {}
             if chunk.text:
-                yield chunk.text
-            elif chunk.is_thinking:
-                logger.info(f"Agent is calling tool: {chunk.tool_name}")
-                yield f"*(Thinking: examining {chunk.tool_name}...)* "
-            
+                data["text"] = chunk.text
+            if chunk.is_thinking:
+                thought = {"tool": chunk.tool_name}
+                if hasattr(chunk, "tool_input") and chunk.tool_input:
+                    thought["input"] = chunk.tool_input
+                data["thought"] = thought
             if chunk.is_complete:
-                logger.info("Chat turn complete.")
+                data["complete"] = True
+            
+            if data:
+                yield f"data: {json.dumps(data)}\n\n"
 
 # Singleton instance
 agent_manager = AgentManager()

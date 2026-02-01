@@ -32,21 +32,37 @@ def test_chat_streaming_end_to_end():
         has_thinking = False
         has_table_content = False
         
-        for chunk in response.iter_text():
+        for chunk_line in response.iter_lines():
+            if not chunk_line.startswith("data: "):
+                continue
+
+            json_data_str = chunk_line[len("data: "):]
+            
+            try:
+                data = json.loads(json_data_str)
+            except json.JSONDecodeError:
+                print(f"  Warning: Could not decode JSON from chunk: {chunk_line[:50]}...")
+                continue
+
             chunk_count += 1
+            
             # Verify we never yield None (TestClient would raise error, but good to be explicit)
-            assert chunk is not None
+            assert data is not None
+
+            # Accumulate text (only if there's a 'text' field in the JSON)
+            if "text" in data:
+                received_text += data["text"]
             
-            # Accumulate text
-            received_text += chunk
-            
-            # Check for signatures (flexible to allow bullet points or tables)
-            if "Thinking" in chunk or "examining" in chunk:
+            # Check for thinking process
+            if "thought" in data:
                 has_thinking = True
-            if "id" in chunk.lower() or "columns" in chunk.lower():
-                has_table_content = True
+            
+            # Check for table content (still looking for keywords in the 'text' field if available)
+            if "text" in data:
+                if "id" in data["text"].lower() or "columns" in data["text"].lower():
+                    has_table_content = True
                 
-            print(f"  Received chunk {chunk_count}: {repr(chunk)[:50]}...")
+            print(f"  Received data {chunk_count}: {repr(data)[:50]}...")
             
         print(f"\nStream finished. Total chunks: {chunk_count}")
         print(f"Full response length: {len(received_text)}")

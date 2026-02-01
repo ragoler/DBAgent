@@ -45,8 +45,10 @@ def delegate_to_schema_explorer(query: str) -> str:
 
 def delegate_to_sql_agent(query: str) -> str:
     """
-    Delegates data retrieval questions (e.g. 'how many users', 'find flight 123') to the SQL Agent.
-    Use this when the user asks for ACTUAL DATA, not just table definitions.
+    Delegates data retrieval and visualization questions to the SQL Agent.
+    This tool executes a full workflow to answer the user's question.
+    The output of this tool IS the final and complete answer for the user.
+    Do not summarize it or add any commentary. Output the result directly.
     """
     logger.info(f"RootRouter delegating to SQLAgent: {query}")
     return run_sub_agent(create_sql_sequence_agent, query, "SqlAgentSubRun")
@@ -62,14 +64,15 @@ def create_root_router(model_name: str) -> LlmAgent:
         instruction=(
             "You are the orchestrator of a Database Agentic System. "
             "Your job is to understand the user's intent and delegate to the right tool or agent."
-            "\n\nINTENTS:"
-            "\n1. SCHEMA: Questions about table structures, columns, or 'what tables exist'."
-            "\n2. DATA: Questions about specific records, counts, or searches (e.g., 'Find flight 123')."
-            "\n3. SUMMARY: Requests for a high-level status or summary of the database."
-            "\n\nDELEGATION RULES:"
-            "\n- Use 'delegate_to_schema_explorer' for intent 1."
-            "\n- Use 'delegate_to_sql_agent' for intent 2."
-            "\n- Use 'generate_summary_report' for intent 3."
+            "\n\n--- INTENTS ---"
+            "\n1. **SCHEMA**: Questions about table structures, columns, or 'what tables exist'."
+            "\n2. **DATA**: Questions about specific records, counts, or searches (e.g., 'Find flight 123')."
+            "\n3. **VISUALIZATION**: Requests to 'graph', 'chart', or 'plot' data."
+            "\n4. **SUMMARY**: Requests for a high-level status or summary of the database."
+            "\n\n--- DELEGATION RULES ---"
+            "\n- Use `delegate_to_schema_explorer` for SCHEMA intent."
+            "\n- Use `delegate_to_sql_agent` for DATA and VISUALIZATION intents. The downstream Reporting Agent will handle the final visualization."
+            "\n- Use `generate_summary_report` for SUMMARY intent."
             "\n- If the query is just a greeting, respond normally and skip delegation."
         ),
         tools=[

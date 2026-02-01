@@ -31,10 +31,20 @@ def create_sql_sequence_agent(model_name: str) -> SequentialAgent:
         model=model_name,
         name="SqlGenerator",
         description="Constructs and validates a SQLite query.",
-        instruction="Use the schema information from the previous step to write a SQLite query. "
-                    "You MUST call 'validate_sql' on your query before proceeding. "
-                    "If validation fails, fix the query and try again. "
-                    "Only output the final VALID SQL query.",
+        instruction=(
+            "You are a SQL writing expert. Your job is to write a single, valid SQLite query based on the user's question and the provided schema. "
+            "\n\n--- QUERY PATTERNS ---"
+            "\n1. **AGGREGATION/COUNTING**: If the user asks 'how many', 'count', 'graph', 'chart', or 'plot', you MUST use aggregation. This typically involves `COUNT(*)` and `GROUP BY`."
+            "\n   - Example for 'graph flights per origin': `SELECT origin, COUNT(*) AS flight_count FROM flights GROUP BY origin`"
+            "\n2. **SPECIFIC LOOKUP**: If the user asks for a specific item (e.g., 'flight 123', 'pilot named Maverick'), use a `WHERE` clause."
+            "\n   - Example for 'flight with id 5': `SELECT * FROM flights WHERE id = 5`"
+            "\n3. **GENERAL LISTING**: For general requests ('show all flights'), select a few relevant columns. Do not use `*`."
+            "\n   - Example for 'list all pilots': `SELECT id, name, license_type FROM pilots`"
+            "\n\n--- VALIDATION ---"
+            "\nBefore finishing, you MUST call the `validate_sql` tool on your generated query. "
+            "If validation fails, you MUST correct the query and call `validate_sql` again. "
+            "Your final output must be ONLY the validated SQL query."
+        ),
         tools=[validate_sql]
     )
 

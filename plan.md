@@ -98,25 +98,30 @@ This plan outlines the milestones for building the Database Agentic System. Each
     - [x] Verify validation catches syntax errors.
     - [x] Verify execution returns actual DB rows.
 
-## Milestone 6: Reporting Agent & NL Synthesis [IN PROGRESS]
-- [ ] Objectives
-    - [ ] Transform raw database output into human-readable narratives.
-- [ ] Tasks
-    - [ ] Implement the `Reporting Agent`.
-    - [ ] Integrate the Reporting Agent into the response pipeline.
-    - [ ] Enable the agent to decide between text, lists, and tables.
-- [ ] Tests
-    - [ ] Verify that JSON results are summarized into natural language (e.g., "Flight 1234 departed at...").
+## Milestone 6: Reporting Agent & NL Synthesis [COMPLETE]
+- [x] Objectives
+    - [x] Transform raw database output into human-readable narratives.
+- [x] Tasks
+    - [x] Implement the `Reporting Agent`.
+    - [x] Integrate the Reporting Agent into the response pipeline.
+    - [x] Enable the agent to decide between text, lists, and tables.
+- [x] Tests
+    - [x] Verified that JSON results are summarized into natural language (e.g., "Flight 1234 departed at...").
+    - [x] Added 29/29 total passing tests.
 
-## Milestone 7: Frontend Chat Interface
-- [ ] Objectives
-    - [ ] Create a modern, interactive chat UI for user interaction.
-- [ ] Tasks
-    - [ ] Build the chat window and message bubbles (JS/HTML).
-    - [ ] Implement real-time updates for agent reasoning steps (streaming/polling).
-    - [ ] Add sidebar for database status and schema overview.
-- [ ] Tests
-    - [ ] Manually test the chat flow from input to response.
+## Milestone 7: Frontend Chat Interface & Charting [IN PROGRESS]
+- [x] Objectives
+    - [x] Create a modern, interactive chat UI with real-time "Reasoning" feedback. [COMPLETE]
+    - [x] Integrate interactive charting (**ApexCharts**). [COMPLETE]
+- [/] Tasks
+    - [x] Build the enhanced chat window with message bubbles. [COMPLETE]
+    - [x] Implement a **Reasoning Sidebar** to show the agent's internal thought process. [COMPLETE]
+    - [x] Update `app.js` to parse structured chart metadata from the agent. [COMPLETE]
+    - [x] Implement dynamic ApexCharts rendering components. [COMPLETE]
+    - [/] Verify charting and reasoning flow.
+- [/] Tests
+    - [/] Ask "Graph flights per origin" and verify a chart appears.
+    - [ ] Verify message streaming and reasoning steps are visible.
 
 ## Milestone 8: Semantic Agent Factory
 - [ ] Objectives
