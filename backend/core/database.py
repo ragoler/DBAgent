@@ -20,8 +20,16 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # Create Base class for declarative models
 Base = declarative_base()
 
+def get_engine():
+    """Returns the SQLAlchemy engine."""
+    return engine
+
+def get_session():
+    """Returns a new synchronous database session."""
+    return SessionLocal()
+
 def get_db():
-    """Dependency for getting a database session."""
+    """Dependency for getting a database session (fastapi style)."""
     db = SessionLocal()
     try:
         yield db

@@ -1,9 +1,4 @@
-import logging
-import warnings
-
-# Suppress ADK deprecation warnings that are internal to the library
-warnings.filterwarnings("ignore", category=DeprecationWarning, module="google.adk")
-
+# FastAPI Application setup
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse

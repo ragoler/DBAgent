@@ -39,8 +39,7 @@ def test_chat_multiple_messages_same_session():
     import asyncio
     
     async def get_session():
-        return await agent_manager.session_service.get_session(
-            app_name=agent_manager.app_name, 
+        return await agent_manager.runner.get_session(
             user_id=user_id, 
             session_id=session_id
         )

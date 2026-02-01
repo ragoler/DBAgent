@@ -24,6 +24,9 @@ tables:
         type: INTEGER
         foreign_key: pilots.id
         description: "ID of the pilot assigned to this flight."
+      - name: origin
+        type: VARCHAR
+        description: "The origin city airport code."
       - name: destination
         type: VARCHAR
         description: "The destination city airport code."
