@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Agentic System</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="glass-container">
+        <aside class="sidebar">
+            <div class="brand">
+                <span class="dot"></span>
+                <h1>DBAgent</h1>
+            </div>
+            <nav>
+                <div class="nav-item active">
+                    <i>💬</i> <span>Chat</span>
+                </div>
+                <div class="nav-item">
+                    <i>📊</i> <span>Database</span>
+                </div>
+                <div class="nav-item">
+                    <i>📅</i> <span>Schedules</span>
+                </div>
+            </nav>
+            <div class="status-panel">
+                <h3>System Status</h3>
+                <div class="status healthy">Healthy</div>
+            </div>
+        </aside>
+        <main class="chat-area">
+            <header>
+                <h2>Agentic Shell</h2>
+                <div class="agent-info">
+                    <span class="online-indicator"></span>
+                    <span>Orchestrator Agent</span>
+                </div>
+            </header>
+            <div id="chat-messages" class="messages">
+                <!-- Messages will appear here -->
+                <div class="message agent animate-fade-in">
+                    <div class="avatar">O</div>
+                    <div class="text">Welcome to the Database Agentic System. How can I assist you with your data today?</div>
+                </div>
+            </div>
+            <div class="input-container">
+                <input type="text" id="user-input" placeholder="Type a message or command..." autocomplete="off">
+                <button id="send-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                    </svg>
+                </button>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+google-adk
+pydantic-settings
+python-dotenv
+sqlalchemy
+sqlparse
+pytest
+httpx
