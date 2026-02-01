@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 from backend.core.schema_parser import SchemaParser
 from backend.core.schema_registry import schema_registry
-from backend.core.tools.schema_tools import list_tables, describe_table
+from backend.agents.root_router_agent import create_root_router
 
 load_dotenv()
 
@@ -28,19 +28,8 @@ class AgentManager:
             metadata = SchemaParser.parse_yaml(schema_path)
             schema_registry.load_schema(metadata)
         
-        # Initialize the Dummy Orchestrator with discovery tools
-        self.orchestrator = LlmAgent(
-            model=self.model_name,
-            name="Orchestrator",
-            description="The primary entry point for user requests.",
-            instruction="You are the lead orchestrator for a Database Agentic System. "
-                        "You must use the provided tools to discover the database schema. "
-                        "When asked about available data, call 'list_tables'. "
-                        "Do not guess or hallucinate table names; only report what the tools return. "
-                        "ALWAYS format your responses using clear Markdown. "
-                        "Use bullet points for lists and Markdown tables for schema descriptions (Column Name | Type | Description).",
-            tools=[list_tables, describe_table]
-        )
+        # Initialize the Root Router
+        self.orchestrator = create_root_router(self.model_name)
         
         self.runner = Runner(
             agent=self.orchestrator,

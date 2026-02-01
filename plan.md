@@ -33,64 +33,70 @@ This plan outlines the milestones for building the Database Agentic System. Each
     - [x] **Manual**
         - [x] Verified frontend aesthetics and interaction.
 
-## Milestone 2: Schema Ingestion & Data Connection [IN PROGRESS]
-- [ ] Objectives
-    - [ ] Connect to a database via SQLAlchemy.
-    - [ ] Implement schema ingestion from YAML metadata.
-    - [ ] Create a Schema Registry for semantic awareness.
-- [ ] Tasks
-    - [ ] **Database Connection**
-        - [ ] Implement `backend/core/database.py` with SQLAlchemy engine/session.
-        - [ ] Configure DB URL via environment variables (default to SQLite).
-    - [ ] **Schema Ingestion & Registry**
-        - [ ] Define `backend/core/schema_parser.py` to read `schema.yaml`.
-        - [ ] Implement `backend/core/schema_registry.py` as a singleton for metadata access.
-        - [ ] Create a `data/` directory and populate it with a sample `schema.yaml`.
-    - [ ] **Schema Discovery Tooling**
-        - [ ] Create `backend/core/tools/schema_tools.py`.
-        - [ ] Define `get_table_schema` and `list_tables` ADK-compatible tools.
-        - [ ] Integrate these tools into the `OrchestratorAgent` for early testing.
-- [ ] Tests
-    - [ ] **Automated**
-        - [ ] Test database connection health.
-        - [ ] Test schema parser with valid/invalid YAML.
-        - [ ] Test Schema Registry singleton behavior.
-    - [ ] **Manual**
-        - [ ] Confirm agent can describe the schema when asked "Which tables are available?".
+## Milestone 2: Schema Ingestion & Data Connection [COMPLETE]
+- [x] Objectives
+    - [x] Connect to a database via SQLAlchemy.
+    - [x] Implement schema ingestion from YAML metadata.
+    - [x] Create a Schema Registry for semantic awareness.
+- [x] Tasks
+    - [x] **Database Connection**
+        - [x] Implement `backend/core/database.py` with SQLAlchemy engine/session.
+        - [x] Configure DB URL via environment variables (default to SQLite).
+    - [x] **Schema Ingestion & Registry**
+        - [x] Define `backend/core/schema_parser.py` to read `schema.yaml`.
+        - [x] Implement `backend/core/schema_registry.py` as a singleton for metadata access.
+        - [x] Create a `data/` directory and populate it with a sample `schema.yaml`.
+    - [x] **Schema Discovery Tooling**
+        - [x] Create `backend/core/tools/schema_tools.py`.
+        - [x] Define `get_table_schema` and `list_tables` ADK-compatible tools.
+        - [x] Integrate these tools into the `OrchestratorAgent` for early testing.
+- [x] Tests
+    - [x] **Automated**
+        - [x] Test database connection health.
+        - [x] Test schema parser with valid/invalid YAML.
+        - [x] Test Schema Registry singleton behavior.
+    - [x] **Manual**
+        - [x] Confirm agent can describe the schema when asked "Which tables are available?".
 
-## Milestone 3: ADK Integration & Root Router
-- [ ] Objectives
-    - [ ] Integrate Google ADK into the FastAPI backend.
-    - [ ] Implement the `RootRouter` for high-level intent analysis.
-- [ ] Tasks
-    - [ ] Initialize ADK `LlmAgent` for the Root Router.
-    - [ ] Define the base prompt for the Root Router.
-    - [ ] Implement the routing logic to dispatch requests to specialized agents.
-- [ ] Tests
-    - [ ] Send a mock request to the Root Router and verify it correctly identifies the intent.
+## Milestone 3: ADK Integration & Root Router [COMPLETE]
+- [x] Objectives
+    - [x] Transition from single-agent to multi-agent architecture.
+    - [x] Implement the `RootRouter` to classify user intent.
+    - [x] Refactor functionality into `SchemaExplorerAgent`.
+- [x] Tasks
+    - [x] **Agent Registry**
+        - [x] Refactored `AgentManager` to use `RootRouter`.
+        - [x] Created `backend/agents/` directory.
+    - [x] **Schema Explorer Agent**
+        - [x] Extracted "Orchestrator" logic into `backend/agents/schema_agent.py`.
+    - [x] **Root Router**
+        - [x] Implemented `backend/agents/root_router_agent.py`.
+        - [x] Defined Intent Classification.
+        - [x] Implemented delegation logic.
+- [x] Tests
+    - [x] **Automated**
+        - [x] Verified full delegation flow E2E.
+        - [x] Verified sub-agent formatting.
 
-## Milestone 4: Read-Only Schema Exploration Agent
+## Milestone 4: SQL Generation Workflow (Sequence Agent) [IN PROGRESS]
 - [ ] Objectives
-    - [ ] Enable the system to answer "What is in this database?".
-    - [ ] Implement the `Read Database Schema Agent`.
+    - [ ] Enable the agent to answer "How many pilots are there?" or "Show me flights to Paris".
+    - [ ] Implement a **Sequence Agent** pipeline: `GenSQL -> Validate -> Execute`.
+    - [ ] Ensure READ-ONLY safety (no DROP/DELETE supported yet).
 - [ ] Tasks
-    - [ ] Create the `ReadSchemaTool` for inspecting the Registry/Database.
-    - [ ] Implement the `Read Database Schema Agent` using ADK.
-    - [ ] Connect the agent to the Root Router.
+    - [ ] **SQL Tools**:
+        - [ ] `generate_sql_tool` (LLM-based).
+        - [ ] `validate_sql_tool` (using `sqlparse`/AST).
+        - [ ] `execute_readonly_sql_tool` (SQLAlchemy).
+    - [ ] **Sequence Agent**:
+        - [ ] Implement `backend/agents/sql_sequence_agent.py`.
+        - [ ] Configure the linear chain of thought.
+    - [ ] **Router Integration**:
+        - [ ] Add `delegate_to_sql_agent` tool to Root Router.
 - [ ] Tests
-    - [ ] Ask "List all tables" and verify the agent returns the correct list.
-    - [ ] Ask "Do we have a table for pilots?" and verify the response.
-
-## Milestone 5: SQL Generation Agent & Schema RAG
-- [ ] Objectives
-    - [ ] Translate natural language into optimized SQL.
-    - [ ] Implement RAG to prevent hallucinated columns.
-- [ ] Tasks
-    - [ ] Create the `SQL Generation Agent`.
-    - [ ] Implement a basic retrieval mechanism (keyword/vector) for relevant schema context.
-    - [ ] Develop the `ExecuteSQLTool` (Read-only mode).
-- [ ] Tests
-    - [ ] Query for specific data (e.g., "Show me the top 5 flights") and verify the generated SQL and results.
+    - [ ] Verify generation of valid SQL for simple queries.
+    - [ ] Verify validation catches syntax errors.
+    - [ ] Verify execution returns actual DB rows.
 
 ## Milestone 6: Reporting Agent & NL Synthesis
 - [ ] Objectives
@@ -152,12 +158,13 @@ This plan outlines the milestones for building the Database Agentic System. Each
 - [ ] Tests
     - [ ] Schedule a task like "Check revenue every hour" and verify it registers.
 
-## Milestone 12: Rule-Based Logic (Observers)
+## Milestone 12: Autonomous Monitoring (Loop Agent)
 - [ ] Objectives
-    - [ ] Implement "If X then Y" autonomous interventions.
+    - [ ] Implement "If X then Y" autonomous interventions using `LoopAgent`.
+    - [ ] Continuously monitor database state until a condition is met.
 - [ ] Tasks
-    - [ ] Implement "Observer Jobs" that poll the database.
-    - [ ] Create the Evaluator-Actor logic for rule enforcement.
+    - [ ] **Loop Agent Setup**: Configure a `LoopAgent` that runs a "Check Status" step periodically.
+    - [ ] **Termination Condition**: Define logic to break the loop (e.g., "Alert resolved").
     - [ ] Log all automated interventions to an "Events" log.
 - [ ] Tests
     - [ ] Setup a rule "If usage > 90% then increase quota" and trigger it with mock data.
