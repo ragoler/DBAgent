@@ -6,6 +6,7 @@ from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from backend.agents.adk.schema import create_schema_agent
 from backend.agents.adk.sql_sequence import create_sql_sequence_agent
+from backend.core.tools.report_tools import generate_summary_report
 
 logger = logging.getLogger(__name__)
 
@@ -52,17 +53,28 @@ def delegate_to_sql_agent(query: str) -> str:
 
 def create_root_router(model_name: str) -> LlmAgent:
     """
-    Creates the Root Router agent.
+    Creates the Root Router agent that delegates tasks to sub-agents.
     """
     return LlmAgent(
         model=model_name,
         name="RootRouter",
-        description="The central dispatcher that analyzes user intent.",
-        instruction="You are the Root Router for the Database Agentic System. "
-                    "Your goal is to understand the user's intent and route it to the correct specialized agent. "
-                    "1. SCHEMA QUERY: If asking about structure (tables, columns), call 'delegate_to_schema_explorer'. "
-                    "2. DATA QUERY: If asking for actual data ('show me rows', 'count', 'who is'), call 'delegate_to_sql_agent'. "
-                    "3. CHAT: If small talk, answer directly. "
-                    "Do NOT run SQL yourself. Do NOT guess schema.",
-        tools=[delegate_to_schema_explorer, delegate_to_sql_agent]
+        description="Analyzes user intent and routes to specialized agents.",
+        instruction=(
+            "You are the orchestrator of a Database Agentic System. "
+            "Your job is to understand the user's intent and delegate to the right tool or agent."
+            "\n\nINTENTS:"
+            "\n1. SCHEMA: Questions about table structures, columns, or 'what tables exist'."
+            "\n2. DATA: Questions about specific records, counts, or searches (e.g., 'Find flight 123')."
+            "\n3. SUMMARY: Requests for a high-level status or summary of the database."
+            "\n\nDELEGATION RULES:"
+            "\n- Use 'delegate_to_schema_explorer' for intent 1."
+            "\n- Use 'delegate_to_sql_agent' for intent 2."
+            "\n- Use 'generate_summary_report' for intent 3."
+            "\n- If the query is just a greeting, respond normally and skip delegation."
+        ),
+        tools=[
+            delegate_to_schema_explorer,
+            delegate_to_sql_agent,
+            generate_summary_report
+        ]
     )

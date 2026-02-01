@@ -4,6 +4,8 @@ from google.adk.agents import LlmAgent, SequentialAgent
 from backend.core.tools.schema_tools import list_tables, describe_table
 from backend.core.tools.sql_tools import execute_sql, validate_sql
 
+from backend.agents.adk.reporter import create_reporter_agent
+
 logger = logging.getLogger(__name__)
 
 def create_sql_sequence_agent(model_name: str) -> SequentialAgent:
@@ -46,15 +48,8 @@ def create_sql_sequence_agent(model_name: str) -> SequentialAgent:
         tools=[execute_sql]
     )
 
-    # Step 4: Narrator
-    narrator = LlmAgent(
-        model=model_name,
-        name="SqlNarrator",
-        description="Synthesizes raw data into a natural language answer.",
-        instruction="Take the raw database results from the previous step and summarize them "
-                    "into a helpful answer for the user. Use Markdown tables for multi-row data. "
-                    "If no results were found, inform the user politely."
-    )
+    # Step 4: Narrator (Reporting Agent)
+    narrator = create_reporter_agent(model_name)
 
     return SequentialAgent(
         name="SqlSequenceWorkflow",

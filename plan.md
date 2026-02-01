@@ -78,27 +78,27 @@ This plan outlines the milestones for building the Database Agentic System. Each
         - [x] Verified full delegation flow E2E.
         - [x] Verified sub-agent formatting.
 
-## Milestone 4: SQL Generation Workflow (Sequence Agent) [IN PROGRESS]
-- [ ] Objectives
-    - [ ] Enable the agent to answer "How many pilots are there?" or "Show me flights to Paris".
-    - [ ] Implement a **Sequence Agent** pipeline: `GenSQL -> Validate -> Execute`.
-    - [ ] Ensure READ-ONLY safety (no DROP/DELETE supported yet).
-- [ ] Tasks
-    - [ ] **SQL Tools**:
-        - [ ] `generate_sql_tool` (LLM-based).
-        - [ ] `validate_sql_tool` (using `sqlparse`/AST).
-        - [ ] `execute_readonly_sql_tool` (SQLAlchemy).
-    - [ ] **Sequence Agent**:
-        - [ ] Implement `backend/agents/sql_sequence_agent.py`.
-        - [ ] Configure the linear chain of thought.
-    - [ ] **Router Integration**:
-        - [ ] Add `delegate_to_sql_agent` tool to Root Router.
-- [ ] Tests
-    - [ ] Verify generation of valid SQL for simple queries.
-    - [ ] Verify validation catches syntax errors.
-    - [ ] Verify execution returns actual DB rows.
+## Milestone 4: SQL Generation Workflow (Sequence Agent) [COMPLETE]
+- [x] Objectives
+    - [x] Enable the agent to answer "How many pilots are there?" or "Show me flights to Paris".
+    - [x] Implement a **Sequence Agent** pipeline: `GenSQL -> Validate -> Execute`.
+    - [x] Ensure READ-ONLY safety (no DROP/DELETE supported yet).
+- [x] Tasks
+    - [x] **SQL Tools**:
+        - [x] `generate_sql_tool` (LLM-based).
+        - [x] `validate_sql_tool` (using `sqlparse`/AST).
+        - [x] `execute_readonly_sql_tool` (SQLAlchemy).
+    - [x] **Sequence Agent**:
+        - [x] Implement `backend/agents/sql_sequence_agent.py`.
+        - [x] Configure the linear chain of thought.
+    - [x] **Router Integration**:
+        - [x] Add `delegate_to_sql_agent` tool to Root Router.
+- [x] Tests
+    - [x] Verify generation of valid SQL for simple queries.
+    - [x] Verify validation catches syntax errors.
+    - [x] Verify execution returns actual DB rows.
 
-## Milestone 6: Reporting Agent & NL Synthesis
+## Milestone 6: Reporting Agent & NL Synthesis [IN PROGRESS]
 - [ ] Objectives
     - [ ] Transform raw database output into human-readable narratives.
 - [ ] Tasks

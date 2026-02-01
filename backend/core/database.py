@@ -11,7 +11,8 @@ DATABASE_URL = os.getenv("DB_URL", "sqlite:///./test.db")
 # Create SQLAlchemy engine
 engine = create_engine(
     DATABASE_URL, 
-    connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+    connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {},
+    echo=True  # Log all SQL queries to the terminal
 )
 
 # Create SessionLocal class for database sessions

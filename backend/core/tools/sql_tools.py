@@ -50,6 +50,7 @@ def execute_sql(query: str) -> str:
     # 2. Execute
     session = get_session()
     try:
+        print(f"\n--- EXECUTING SQL ---\n{query}\n---------------------\n")
         # verify connection active
         result = session.execute(text(query))
         
