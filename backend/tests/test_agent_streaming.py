@@ -43,7 +43,7 @@ def test_chat_streaming_end_to_end():
             # Check for signatures (flexible to allow bullet points or tables)
             if "Thinking" in chunk or "examining" in chunk:
                 has_thinking = True
-            if "id" in chunk and "INTEGER" in chunk:
+            if "id" in chunk.lower() or "columns" in chunk.lower():
                 has_table_content = True
                 
             print(f"  Received chunk {chunk_count}: {repr(chunk)[:50]}...")

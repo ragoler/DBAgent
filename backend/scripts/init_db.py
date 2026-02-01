@@ -42,13 +42,13 @@ def init_db():
                 print("Seeding flights...")
                 # flight 1: NYC to LON
                 conn.execute(text(
-                    "INSERT INTO flights (id, pilot_id, origin, destination, departure_time) "
-                    "VALUES (1, 101, 'JFK', 'LHR', '2023-10-25 08:00:00')"
+                    "INSERT INTO flights (id, pilot_id, plane_id, origin, destination, departure_time) "
+                    "VALUES (1, 101, 1, 'JFK', 'LHR', '2023-10-25 08:00:00')"
                 ))
                 # flight 2: LON to PAR
                 conn.execute(text(
-                    "INSERT INTO flights (id, pilot_id, origin, destination, departure_time) "
-                    "VALUES (2, 102, 'LHR', 'CDG', '2023-10-26 14:30:00')"
+                    "INSERT INTO flights (id, pilot_id, plane_id, origin, destination, departure_time) "
+                    "VALUES (2, 102, 1, 'LHR', 'CDG', '2023-10-26 14:30:00')"
                 ))
             
             elif table_name == "pilots":

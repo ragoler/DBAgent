@@ -33,6 +33,10 @@ tables:
       - name: departure_time
         type: TIMESTAMP
         description: "Scheduled time of departure."
+      - name: plane_id
+        type: INTEGER
+        foreign_key: planes.id
+        description: "ID of the plane assigned to this flight."
 
   - name: planes
     description: "Inventory of aircraft available for flights."

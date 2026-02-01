@@ -5,7 +5,7 @@ from google.adk.agents import LlmAgent
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from backend.agents.adk.schema import create_schema_agent
-from backend.agents.adk.sql import create_sql_agent
+from backend.agents.adk.sql_sequence import create_sql_sequence_agent
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ def delegate_to_sql_agent(query: str) -> str:
     Use this when the user asks for ACTUAL DATA, not just table definitions.
     """
     logger.info(f"RootRouter delegating to SQLAgent: {query}")
-    return run_sub_agent(create_sql_agent, query, "SqlAgentSubRun")
+    return run_sub_agent(create_sql_sequence_agent, query, "SqlAgentSubRun")
 
 def create_root_router(model_name: str) -> LlmAgent:
     """

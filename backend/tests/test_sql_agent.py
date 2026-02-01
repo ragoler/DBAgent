@@ -10,16 +10,19 @@ def setup_test_data():
     engine = get_engine()
     with engine.connect() as conn:
         # Create Tables
-        conn.execute(text("CREATE TABLE IF NOT EXISTS pilots (id INTEGER PRIMARY KEY, name VARCHAR)"))
-        conn.execute(text("CREATE TABLE IF NOT EXISTS flights (id INTEGER PRIMARY KEY, pilot_id INTEGER, origin VARCHAR, destination VARCHAR)"))
+        conn.execute(text("CREATE TABLE IF NOT EXISTS pilots (id INTEGER PRIMARY KEY, name VARCHAR, license_type VARCHAR)"))
+        conn.execute(text("CREATE TABLE IF NOT EXISTS planes (id INTEGER PRIMARY KEY, model VARCHAR, capacity INTEGER)"))
+        conn.execute(text("CREATE TABLE IF NOT EXISTS flights (id INTEGER PRIMARY KEY, pilot_id INTEGER, plane_id INTEGER, origin VARCHAR, destination VARCHAR, departure_time TIMESTAMP)"))
         
         # Clean Slate
         conn.execute(text("DELETE FROM flights"))
         conn.execute(text("DELETE FROM pilots"))
+        conn.execute(text("DELETE FROM planes"))
         
         # Seed Data
-        conn.execute(text("INSERT INTO pilots (id, name) VALUES (1, 'Maverick'), (2, 'Amelia')"))
-        conn.execute(text("INSERT INTO flights (id, pilot_id, origin, destination, departure_time) VALUES (1, 1, 'JFK', 'LHR', '2023-11-01 10:00:00'), (2, 2, 'LHR', 'CDG', '2023-11-01 15:30:00')"))
+        conn.execute(text("INSERT INTO pilots (id, name, license_type) VALUES (1, 'Maverick', 'Military'), (2, 'Amelia', 'Commercial')"))
+        conn.execute(text("INSERT INTO planes (id, model, capacity) VALUES (1, 'Boeing 737', 150)"))
+        conn.execute(text("INSERT INTO flights (id, pilot_id, plane_id, origin, destination, departure_time) VALUES (1, 1, 1, 'JFK', 'LHR', '2023-11-01 10:00:00'), (2, 2, 1, 'LHR', 'CDG', '2023-11-01 15:30:00')"))
         conn.commit()
     yield
 

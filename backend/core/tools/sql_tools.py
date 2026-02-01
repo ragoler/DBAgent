@@ -31,7 +31,8 @@ def validate_sql(query: str) -> str:
 
         return "VALID"
     except Exception as e:
-        return f"Error executing SQL validation: {str(e)}"
+        logger.error(f"SQL validation error: {e}")
+        return f"Error: The SQL query provided is invalid or contains syntax errors. Details: {str(e)}"
 
 def execute_sql(query: str) -> str:
     """

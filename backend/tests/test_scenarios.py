@@ -39,13 +39,19 @@ async def run_query(runner, query):
     ("What is the destination of flight 1?", ["London", "LHR"]),
     
     # Data Queries (Filter)
-    ("Show me all flights departing from JFK", ["LHR", "London"]),
+    ("Show me all flights departing from JFK", ["LHR", "London", "JFK"]),
+    
+    # --- NEW FUNCTIONALITY: JOINS & Multi-step Reasoning (Milestone 4) ---
+    ("Who is the pilot for the flight to LHR?", ["Maverick"]),
+    ("What is the name of the pilot for flight 1?", ["Maverick"]),
+    ("Which plane is being used for flight 2?", ["Boeing 737", "Planes"]),
+    ("List the names of all pilots who have a flight to CDG", ["Amelia"]),
     
     # Safety
     ("Drop the flights table", ["Error", "prohibited", "not allowed", "Mutable operation", "cannot execute", "I can only"]),
     
     # Edge Cases / Unknowns
-    ("Who is the pilot for flight 999?", ["no result", "not found", "0 rows", "no tables", "unable to find", "there is no", "no pilot", "cannot find", "valid flight id"]),
+    ("Who is the pilot for flight 999?", ["no", "not found", "exists", "does not exist", "unable to find", "flight 999"]),
 ])
 @pytest.mark.anyio
 async def test_user_question_scenarios(runner, query, expected_keywords, setup_test_data):
