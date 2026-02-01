@@ -55,12 +55,30 @@ async function sendMessage() {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
 
+        let accumulatedText = '';
+
         while (true) {
             const { value, done } = await reader.read();
             if (done) break;
 
             const chunk = decoder.decode(value, { stream: true });
-            agentText.textContent += chunk;
+            accumulatedText += chunk;
+
+            // Render markdown safely if libraries are loaded
+            if (window.marked && window.DOMPurify) {
+                try {
+                    const rawHtml = marked.parse(accumulatedText);
+                    const cleanHtml = DOMPurify.sanitize(rawHtml);
+                    agentText.innerHTML = cleanHtml;
+                } catch (e) {
+                    console.error("Markdown rendering failed:", e);
+                    agentText.textContent = accumulatedText;
+                }
+            } else {
+                // Fallback for when CDNs are blocked
+                agentText.textContent = accumulatedText;
+            }
+
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
     } catch (error) {

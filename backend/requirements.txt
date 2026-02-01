@@ -7,3 +7,4 @@ sqlalchemy
 sqlparse
 pytest
 httpx
+PyYAML

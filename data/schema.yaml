@@ -1,0 +1,46 @@
+tables:
+  - name: pilots
+    description: "Contains information about registered pilots."
+    columns:
+      - name: id
+        type: INTEGER
+        primary_key: true
+        description: "Unique identifier for the pilot."
+      - name: name
+        type: VARCHAR
+        description: "Full name of the pilot."
+      - name: license_type
+        type: VARCHAR
+        description: "The type of flight license held (e.g., Private, Commercial)."
+
+  - name: flights
+    description: "Records of scheduled and completed flights."
+    columns:
+      - name: id
+        type: INTEGER
+        primary_key: true
+        description: "Unique flight identifier."
+      - name: pilot_id
+        type: INTEGER
+        foreign_key: pilots.id
+        description: "ID of the pilot assigned to this flight."
+      - name: destination
+        type: VARCHAR
+        description: "The destination city airport code."
+      - name: departure_time
+        type: TIMESTAMP
+        description: "Scheduled time of departure."
+
+  - name: planes
+    description: "Inventory of aircraft available for flights."
+    columns:
+      - name: id
+        type: INTEGER
+        primary_key: true
+        description: "Unique plane identifier."
+      - name: model
+        type: VARCHAR
+        description: "The aircraft model name."
+      - name: capacity
+        type: INTEGER
+        description: "Maximum passenger capacity."
