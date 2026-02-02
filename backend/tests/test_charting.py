@@ -34,20 +34,21 @@ async def run_query(runner, query):
 @pytest.mark.anyio
 async def test_charting_request(runner, setup_test_data):
     """
-    Tests that a query asking for a graph returns a valid ApexCharts JSON block.
+    Tests that a query asking for a graph returns a valid ApexCharts JSON block
+    wrapped in a markdown code fence.
     """
     query = "Graph flights per origin"
     print(f"\nTesting Query: '{query}'")
     response_text = await run_query(runner, query)
     print(f"Full Response Text: {response_text}")
 
-    # 1. Assert that the special chart tags are present
-    assert "[CHART_JSON]" in response_text, "Opening chart tag not found in response."
-    assert "[/CHART_JSON]" in response_text, "Closing chart tag not found in response."
+    # 1. Assert that the markdown code fence is present
+    assert "```json" in response_text, "Opening markdown json tag not found in response."
+    assert "```" in response_text.split("```json")[1], "Closing markdown tag not found in response."
 
     # 2. Extract the JSON content using regex
-    match = re.search(r'\[CHART_JSON\](.*)\[/CHART_JSON\]', response_text, re.DOTALL)
-    assert match, "Could not extract chart JSON from response."
+    match = re.search(r'```json\s*(\{[\s\S]*?\})\s*```', response_text, re.DOTALL)
+    assert match, "Could not extract chart JSON from markdown code fence."
     chart_json_str = match.group(1).strip()
     
     # 3. Parse the extracted string as JSON
