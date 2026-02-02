@@ -7,6 +7,7 @@ from google.adk.sessions import InMemorySessionService
 from backend.agents.adk.schema import create_schema_agent
 from backend.agents.adk.sql_sequence import create_sql_sequence_agent
 from backend.core.tools.report_tools import generate_summary_report
+from backend.core.tools.format_tools import ensure_chart_tags
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,7 @@ def run_sub_agent(agent_creator, query: str, app_name: str) -> str:
         logger.error(f"Error in {app_name}: {e}")
         return f"Error: {str(e)}"
         
-    return response_text
+    return ensure_chart_tags(response_text)
 
 def delegate_to_schema_explorer(query: str) -> str:
     """Delegates schema questions (e.g. 'list tables', 'columns') to the Schema Agent."""
