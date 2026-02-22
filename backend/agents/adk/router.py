@@ -12,12 +12,12 @@ from backend.core.tools.format_tools import ensure_chart_tags
 
 logger = logging.getLogger(__name__)
 
-def run_sub_agent(agent_creator, query: str, app_name: str) -> str:
+async def run_sub_agent(agent_creator, query: str, app_name: str) -> str:
     """Helper to run ephemeral sub-agents"""
     tracer = trace.get_tracer(__name__)
     
     # Create a span for the sub-agent execution
-    # Note: session_id is automatically injected by StreamSpanProcessor if context is set
+    # Context should propagate automatically in async
     with tracer.start_as_current_span(f"SubAgent: {app_name}", attributes={"query": query}) as span:
         model_name = os.getenv("MODEL_NAME", "gemini-2.0-flash")
         agent = agent_creator(model_name)
@@ -35,7 +35,8 @@ def run_sub_agent(agent_creator, query: str, app_name: str) -> str:
         response_text = ""
         try:
             # Use dummy IDs for the internal session
-            for event in runner.run(new_message=user_msg, user_id="router_delegate", session_id="ephemeral_session"):
+            # Using run_async to preserve context
+            async for event in runner.run_async(new_message=user_msg, user_id="router_delegate", session_id="ephemeral_session"):
                 if event.content and event.content.parts:
                     for part in event.content.parts:
                         if part.text:
@@ -48,11 +49,11 @@ def run_sub_agent(agent_creator, query: str, app_name: str) -> str:
             
         return ensure_chart_tags(response_text)
 
-def delegate_to_schema_explorer(query: str) -> str:
+async def delegate_to_schema_explorer(query: str) -> str:
     """Delegates schema questions (e.g. 'list tables', 'columns') to the Schema Agent."""
-    return run_sub_agent(create_schema_agent, query, "SchemaExplorerSubRun")
+    return await run_sub_agent(create_schema_agent, query, "SchemaExplorerSubRun")
 
-def delegate_to_sql_agent(query: str) -> str:
+async def delegate_to_sql_agent(query: str) -> str:
     """
     Delegates data retrieval and visualization questions to the SQL Agent.
     This tool executes a full workflow to answer the user's question.
@@ -60,7 +61,7 @@ def delegate_to_sql_agent(query: str) -> str:
     Do not summarize it or add any commentary. Output the result directly.
     """
     logger.info(f"RootRouter delegating to SQLAgent: {query}")
-    return run_sub_agent(create_sql_sequence_agent, query, "SqlAgentSubRun")
+    return await run_sub_agent(create_sql_sequence_agent, query, "SqlAgentSubRun")
 
 def create_root_router(model_name: str) -> LlmAgent:
     """

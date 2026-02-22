@@ -1,3 +1,5 @@
+const expandAllBtn = document.getElementById('expand-all-btn');
+const collapseAllBtn = document.getElementById('collapse-all-btn');
 const chatMessages = document.getElementById('chat-messages');
 const userInput = document.getElementById('user-input');
 const sendBtn = document.getElementById('send-btn');
@@ -83,19 +85,30 @@ function handleTrace(trace) {
         const summary = document.createElement('summary');
         summary.className = 'trace-header';
         
+        // Tooltip
+        const startTime = new Date(data.start_time / 1000000).toLocaleTimeString(); // approx
+        let tooltip = `Name: ${name}\nStart: ${startTime}\nID: ${span_id.substring(0,8)}...`;
+        if (attributes) {
+             const attrKeys = Object.keys(attributes).filter(k => k !== 'query' && k !== 'tool_input');
+             if (attrKeys.length > 0) {
+                 tooltip += '\nAttributes:\n' + attrKeys.map(k => `- ${k}: ${attributes[k]}`).join('\n');
+             }
+        }
+        summary.setAttribute('data-tooltip', tooltip);
+        
         const labelSpan = document.createElement('span');
         labelSpan.className = 'trace-label';
         labelSpan.innerHTML = `${icon} <strong>${label}</strong>`;
         
         const statusSpan = document.createElement('span');
         statusSpan.className = 'trace-status running';
-        statusSpan.textContent = '...'; // Minimalist running indicator
+        statusSpan.textContent = '...'; 
         
         summary.appendChild(labelSpan);
         summary.appendChild(statusSpan);
         details.appendChild(summary);
 
-        // Content container (for attributes/logs)
+        // Content container
         const contentDiv = document.createElement('div');
         contentDiv.className = 'trace-content';
         
@@ -132,8 +145,6 @@ function handleTrace(trace) {
         }
         
         traceMap.set(span_id, details);
-        
-        // Auto-scroll to bottom
         reasoningSteps.scrollTop = reasoningSteps.scrollHeight;
 
     } else if (event === 'end') {
@@ -149,18 +160,31 @@ function handleTrace(trace) {
                     summary.classList.add('status-error');
                 } else {
                     statusSpan.className = 'trace-status done';
-                    statusSpan.textContent = 'DONE'; // Or checkmark
+                    statusSpan.textContent = 'DONE';
                     statusSpan.innerHTML = '✓';
                     summary.classList.add('status-success');
                 }
             }
-            
-            // Optional: Auto-collapse successful generic/tool nodes to reduce clutter?
-            // if (status !== 'ERROR' && !name.startsWith('Agent:')) {
-            //    details.open = false;
-            // }
+            // Update tooltip with status
+            let currentTooltip = summary.getAttribute('data-tooltip') || '';
+            currentTooltip += `\nStatus: ${status}`;
+            summary.setAttribute('data-tooltip', currentTooltip);
         }
     }
+}
+
+// --- Tree Controls ---
+
+if (expandAllBtn) {
+    expandAllBtn.addEventListener('click', () => {
+        document.querySelectorAll('.trace-node').forEach(el => el.open = true);
+    });
+}
+
+if (collapseAllBtn) {
+    collapseAllBtn.addEventListener('click', () => {
+        document.querySelectorAll('.trace-node').forEach(el => el.open = false);
+    });
 }
 
 // --- Charting Logic ---
