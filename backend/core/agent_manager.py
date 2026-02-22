@@ -91,6 +91,8 @@ class AgentManager:
 
         task = asyncio.create_task(run_agent())
         
+        full_response = ""
+        
         try:
             while True:
                 item = await queue.get()
@@ -119,6 +121,7 @@ class AgentManager:
                 data = {}
                 if hasattr(item, 'text') and item.text:
                     data["text"] = item.text
+                    full_response += item.text
                 if hasattr(item, 'is_thinking') and item.is_thinking:
                     # We still send this for legacy support, or maybe disable it?
                     # Let's keep it but mark it so frontend knows.
@@ -128,6 +131,7 @@ class AgentManager:
                     data["thought"] = thought
                 if hasattr(item, 'is_complete') and item.is_complete:
                     data["complete"] = True
+                    logger.info(f"Full Agent Response: {full_response}")
                 
                 if data:
                     yield f"data: {json.dumps(data)}\n\n"

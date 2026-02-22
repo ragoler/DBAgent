@@ -5,45 +5,54 @@ import json
 import yaml
 import sqlite3
 import random
-from sqlalchemy import create_engine, text
+from datetime import datetime
 
 # Add project root to path
 sys.path.append(os.getcwd())
 
-MOVIES_URL = "https://raw.githubusercontent.com/vega/vega-datasets/master/data/movies.json"
+VEGA_MOVIES_URL = "https://raw.githubusercontent.com/vega/vega-datasets/master/data/movies.json"
+WIKI_MOVIES_URL = "https://raw.githubusercontent.com/prust/wikipedia-movie-data/master/movies.json"
+
 DATA_DIR = os.path.join("data")
 DB_PATH = os.path.join(DATA_DIR, "movies.db")
 SCHEMA_PATH = os.path.join(DATA_DIR, "movies_schema.yaml")
-CONFIG_PATH = os.path.join(DATA_DIR, "databases.yaml")
 
-# Mock data for actors since source JSON doesn't have them
-FAMOUS_ACTORS = [
-    "Tom Hanks", "Meryl Streep", "Leonardo DiCaprio", "Denzel Washington", 
-    "Robert De Niro", "Al Pacino", "Jack Nicholson", "Marlon Brando", 
-    "Johnny Depp", "Brad Pitt", "Angelina Jolie", "Scarlett Johansson", 
-    "Jennifer Lawrence", "Emma Stone", "Viola Davis", "Cate Blanchett",
-    "Kate Winslet", "Julia Roberts", "Sandra Bullock", "Nicole Kidman",
-    "Harrison Ford", "Samuel L. Jackson", "Morgan Freeman", "Tom Cruise",
-    "Will Smith", "Matt Damon", "Ben Affleck", "George Clooney",
-    "Robert Downey Jr.", "Chris Evans", "Chris Hemsworth", "Mark Ruffalo"
-]
-
-def download_movies():
-    print(f"Downloading movies dataset from {MOVIES_URL}...")
+def download_data(url, name):
+    print(f"Downloading {name} from {url}...")
     try:
-        response = httpx.get(MOVIES_URL)
+        response = httpx.get(url)
         response.raise_for_status()
-        movies = response.json()
-        print(f"Downloaded {len(movies)} movie records.")
-        return movies
+        data = response.json()
+        print(f"Downloaded {len(data)} records for {name}.")
+        return data
     except Exception as e:
-        print(f"Error downloading movies: {e}")
-        sys.exit(1)
+        print(f"Error downloading {name}: {e}")
+        return None
 
-def create_database(movies):
+def normalize_title(title):
+    if not title: return ""
+    return str(title).lower().strip()
+
+def extract_year(date_str):
+    # Vega date format: "Dec 15 1993" or sometimes just year?
+    # Or ISO? Let's check. Vega movies.json usually has "Mon DD YYYY"
+    if not date_str: return None
+    try:
+        # Try parse "MMM DD YYYY"
+        dt = datetime.strptime(date_str, "%b %d %Y")
+        return dt.year
+    except ValueError:
+        pass
+    
+    # Try just 4 digits
+    if len(date_str) == 4 and date_str.isdigit():
+        return int(date_str)
+        
+    return None
+
+def create_database(vega_movies, wiki_movies):
     print(f"Creating SQLite database at {DB_PATH}...")
     
-    # Remove existing DB
     if os.path.exists(DB_PATH):
         os.remove(DB_PATH)
         
@@ -65,40 +74,45 @@ def create_database(movies):
         )
     """)
     
-    # Analyze columns for movies table
-    if not movies:
-        print("No movie data found.")
-        return
+    # Prepare Vega movies for insertion
+    if not vega_movies:
+        print("No Vega movie data found.")
+        return {}, {}
 
-    first_record = movies[0]
+    first_record = vega_movies[0]
     sanitized_keys = {}
-    create_cols = ["id INTEGER PRIMARY KEY"] # Add explicit ID
-    
-    # Director will be FK
+    create_cols = ["id INTEGER PRIMARY KEY"]
     skip_keys = ["Director"] 
     
+    # Infer types from first non-null value for each column
+    column_types = {}
+    
+    # Analyze all records to find types
     for key in first_record.keys():
-        if key in skip_keys:
-            continue
-            
+        if key in skip_keys: continue
         sanitized = key.lower().replace(" ", "_").replace("-", "_")
         sanitized_keys[key] = sanitized
         
-        # Simple type inference
-        val = first_record[key]
-        col_type = "TEXT"
-        if isinstance(val, int):
-            col_type = "INTEGER"
-        elif isinstance(val, float):
-            col_type = "REAL"
-            
+        # Check first 100 records for a non-null value to infer type
+        col_type = "TEXT" # Default
+        for m in vega_movies[:100]:
+            val = m.get(key)
+            if val is not None:
+                if isinstance(val, int):
+                    col_type = "INTEGER"
+                elif isinstance(val, float):
+                    col_type = "INTEGER" # Treat as number for simplicity in schema
+                else:
+                    col_type = "TEXT"
+                break
+        
         create_cols.append(f"{sanitized} {col_type}")
-    
+        column_types[sanitized] = "VARCHAR" if col_type == "TEXT" else "INTEGER"
+
     create_cols.append("director_id INTEGER")
     create_cols.append("FOREIGN KEY(director_id) REFERENCES directors(id)")
     
-    create_stmt = f"CREATE TABLE movies ({', '.join(create_cols)})"
-    cursor.execute(create_stmt)
+    cursor.execute(f"CREATE TABLE movies ({', '.join(create_cols)})")
     
     cursor.execute("""
         CREATE TABLE movie_actors (
@@ -110,62 +124,85 @@ def create_database(movies):
         )
     """)
     
-    # 2. Insert Data
+    # 2. Build Lookup for Wiki Movies (Title + Year -> Cast)
+    print("Building Wikipedia movie lookup...")
+    wiki_map = {}
+    for wm in wiki_movies:
+        t = normalize_title(wm.get("title"))
+        y = wm.get("year")
+        cast = wm.get("cast", [])
+        if t:
+            if (t, y) not in wiki_map:
+                wiki_map[(t, y)] = cast
+            # Also store just by title as fallback
+            if t not in wiki_map:
+                wiki_map[t] = cast
+
+    # 3. Insert Data
     print("Inserting data...")
     
-    # Pre-populate Directors to get IDs
-    directors = set()
-    for m in movies:
-        d = m.get("Director")
-        if d:
-            directors.add(d)
-            
+    # Maps for normalized DB
     director_map = {} # Name -> ID
-    for idx, d_name in enumerate(sorted(list(directors)), 1):
-        cursor.execute("INSERT INTO directors (id, name) VALUES (?, ?)", (idx, d_name))
-        director_map[d_name] = idx
-        
-    # Pre-populate Actors
     actor_map = {} # Name -> ID
-    for idx, a_name in enumerate(FAMOUS_ACTORS, 1):
-        cursor.execute("INSERT INTO actors (id, name) VALUES (?, ?)", (idx, a_name))
-        actor_map[a_name] = idx
-        
-    # Insert Movies
+    
+    dir_id_counter = 1
+    act_id_counter = 1
+    movie_id_counter = 1
+    
     movie_insert_sql = f"INSERT INTO movies (id, {', '.join(sanitized_keys.values())}, director_id) VALUES (?, {', '.join(['?']*len(sanitized_keys))}, ?)"
     
-    movie_id = 1
-    for movie in movies:
-        values = [movie_id]
-        for original_key in sanitized_keys.keys():
-            val = movie.get(original_key)
-            values.append(val)
-            
-        # Director FK
+    for movie in vega_movies:
+        # Handle Director
         d_name = movie.get("Director")
-        d_id = director_map.get(d_name) # None if missing
+        d_id = None
+        if d_name:
+            if d_name not in director_map:
+                cursor.execute("INSERT INTO directors (id, name) VALUES (?, ?)", (dir_id_counter, d_name))
+                director_map[d_name] = dir_id_counter
+                dir_id_counter += 1
+            d_id = director_map[d_name]
+            
+        # Insert Movie
+        values = [movie_id_counter]
+        for original_key in sanitized_keys.keys():
+            values.append(movie.get(original_key))
         values.append(d_id)
         
         cursor.execute(movie_insert_sql, values)
         
-        # Link Random Actors (0-3 per movie)
-        num_actors = random.randint(0, 3)
-        if num_actors > 0:
-            selected_actors = random.sample(list(actor_map.values()), num_actors)
-            for a_id in selected_actors:
-                cursor.execute("INSERT INTO movie_actors (movie_id, actor_id) VALUES (?, ?)", (movie_id, a_id))
+        # Handle Actors via Wiki Match
+        title = normalize_title(movie.get("Title"))
+        year = extract_year(movie.get("Release_Date"))
         
-        movie_id += 1
+        cast = []
+        # Try match with year
+        if (title, year) in wiki_map:
+            cast = wiki_map[(title, year)]
+        elif title in wiki_map:
+            cast = wiki_map[title]
+            
+        # Insert Actors and Links
+        for actor_name in set(cast):
+            if not actor_name: continue
+            
+            if actor_name not in actor_map:
+                cursor.execute("INSERT INTO actors (id, name) VALUES (?, ?)", (act_id_counter, actor_name))
+                actor_map[actor_name] = act_id_counter
+                act_id_counter += 1
+            
+            a_id = actor_map[actor_name]
+            cursor.execute("INSERT INTO movie_actors (movie_id, actor_id) VALUES (?, ?)", (movie_id_counter, a_id))
+            
+        movie_id_counter += 1
         
     conn.commit()
     conn.close()
-    print("Database created with Directors and Actors.")
-    return sanitized_keys
+    print(f"Database populated. Directors: {len(director_map)}, Actors: {len(actor_map)}, Movies: {movie_id_counter-1}")
+    return sanitized_keys, column_types
 
-def generate_schema_yaml(sanitized_keys):
+def generate_schema_yaml(sanitized_keys, column_types):
     print(f"Generating schema YAML at {SCHEMA_PATH}...")
     
-    # Directors Table
     tables = [
         {
             "name": "directors",
@@ -185,14 +222,14 @@ def generate_schema_yaml(sanitized_keys):
         }
     ]
     
-    # Movies Table
     movie_cols = [
         {"name": "id", "type": "INTEGER", "primary_key": True, "description": "Unique movie identifier."}
     ]
     for key, sanitized in sanitized_keys.items():
+        ctype = column_types.get(sanitized, "VARCHAR")
         movie_cols.append({
             "name": sanitized,
-            "type": "VARCHAR" if "date" in sanitized or "text" in sanitized else "INTEGER",
+            "type": ctype,
             "description": f"Movie attribute: {key}"
         })
     movie_cols.append({
@@ -208,7 +245,6 @@ def generate_schema_yaml(sanitized_keys):
         "columns": movie_cols
     })
     
-    # Join Table
     tables.append({
         "name": "movie_actors",
         "description": "Join table linking movies to actors.",
@@ -225,7 +261,11 @@ def generate_schema_yaml(sanitized_keys):
     print("Schema YAML generated.")
 
 if __name__ == "__main__":
-    movies_data = download_movies()
-    if movies_data:
-        keys = create_database(movies_data)
-        generate_schema_yaml(keys)
+    vega_data = download_data(VEGA_MOVIES_URL, "Vega Movies")
+    wiki_data = download_data(WIKI_MOVIES_URL, "Wikipedia Movies")
+    
+    if vega_data and wiki_data:
+        keys, types = create_database(vega_data, wiki_data)
+        generate_schema_yaml(keys, types)
+    else:
+        print("Failed to download necessary data.")

@@ -266,20 +266,32 @@ function tryRenderChart(container, text) {
 
     while ((match = chartRegex.exec(text)) !== null) {
         const jsonStr = match[1];
+        console.log("Found chart JSON match:", jsonStr);
         let chartConfig;
         
         try {
             chartConfig = JSON.parse(jsonStr);
+            console.log("Parsed chart config:", chartConfig);
         } catch (e) {
+            console.error("Failed to parse chart JSON:", e);
             // Fallback: Try to fix common LLM JSON errors (like over-escaping)
             try {
                 // Replace \" with " and then retry
                 const fixedStr = jsonStr.replace(/\\"/g, '"');
                 chartConfig = JSON.parse(fixedStr);
+                console.log("Parsed chart config after fix:", chartConfig);
             } catch (e2) {
-                console.error("Failed to parse chart JSON:", e, e2);
+                console.error("Failed to parse chart JSON even after fix:", e, e2);
                 continue; // Skip this chart
             }
+        }
+
+        // Sanitize Config
+        if (chartConfig.xaxis && Array.isArray(chartConfig.xaxis.categories)) {
+            chartConfig.xaxis.categories = chartConfig.xaxis.categories.map(c => c === null ? "Unknown" : c);
+        }
+        if (Array.isArray(chartConfig.labels)) {
+            chartConfig.labels = chartConfig.labels.map(l => l === null ? "Unknown" : l);
         }
 
         try {
@@ -295,6 +307,9 @@ function tryRenderChart(container, text) {
                 if (chartElement) {
                     const chart = new ApexCharts(chartElement, chartConfig);
                     chart.render();
+                    console.log("Chart rendered to", chartId);
+                } else {
+                    console.error("Chart element not found:", chartId);
                 }
             }, 100);
         } catch (e) {

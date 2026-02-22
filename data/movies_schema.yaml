@@ -27,7 +27,7 @@ tables:
     primary_key: true
     description: Unique movie identifier.
   - name: title
-    type: INTEGER
+    type: VARCHAR
     description: 'Movie attribute: Title'
   - name: us_gross
     type: INTEGER
@@ -45,22 +45,22 @@ tables:
     type: VARCHAR
     description: 'Movie attribute: Release Date'
   - name: mpaa_rating
-    type: INTEGER
+    type: VARCHAR
     description: 'Movie attribute: MPAA Rating'
   - name: running_time_min
     type: INTEGER
     description: 'Movie attribute: Running Time min'
   - name: distributor
-    type: INTEGER
+    type: VARCHAR
     description: 'Movie attribute: Distributor'
   - name: source
-    type: INTEGER
+    type: VARCHAR
     description: 'Movie attribute: Source'
   - name: major_genre
-    type: INTEGER
+    type: VARCHAR
     description: 'Movie attribute: Major Genre'
   - name: creative_type
-    type: INTEGER
+    type: VARCHAR
     description: 'Movie attribute: Creative Type'
   - name: rotten_tomatoes_rating
     type: INTEGER

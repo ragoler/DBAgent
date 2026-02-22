@@ -40,6 +40,9 @@ def create_sql_sequence_agent(model_name: str) -> SequentialAgent:
             "\n   - Example for 'flight with id 5': `SELECT * FROM flights WHERE id = 5`"
             "\n3. **GENERAL LISTING**: For general requests ('show all flights'), select a few relevant columns. Do not use `*`."
             "\n   - Example for 'list all pilots': `SELECT id, name, license_type FROM pilots`"
+            "\n\n--- STRING ESCAPING ---"
+            "\n- If a string value contains a single quote (e.g. \"Schindler's List\"), you MUST escape it by doubling the quote (e.g. 'Schindler''s List')."
+            "\n- Do NOT use double quotes for string literals. Use single quotes only."
             "\n\n--- VALIDATION ---"
             "\nBefore finishing, you MUST call the `validate_sql` tool on your generated query. "
             "If validation fails, you MUST correct the query and call `validate_sql` again. "
@@ -54,7 +57,11 @@ def create_sql_sequence_agent(model_name: str) -> SequentialAgent:
         name="SqlExecutor",
         description="Executes the validated SQL query.",
         instruction="Execute the SQL query provided by the previous step using 'execute_sql'. "
-                    "Do not modify the query. If the execution returns an error, explain it.",
+                    "Call 'execute_sql' EXACTLY ONCE with the provided query. "
+                    "Output the result immediately. Do NOT retry. Do NOT fix the query. "
+                    "If execution fails, output the error message as is."
+                    "\n\nCRITICAL: Your final answer MUST be the raw output from the tool execution. "
+                    "Do not summarize or explain it. Pass the data exactly as received.",
         tools=[execute_sql]
     )
 

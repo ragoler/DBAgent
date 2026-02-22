@@ -18,36 +18,37 @@ def validate_sql(query: str) -> str:
     """
     tracer = trace.get_tracer(__name__)
     
-    # Manually start span to ensure we can inject attributes and status
-    # We use session_context_var implicitly via StreamSpanProcessor, 
-    # but we can also set it explicitly if needed, though attributes are better.
     with tracer.start_as_current_span("Tool: validate_sql", attributes={"query": query}) as span:
         try:
+            # 1. Check for Prohibited Keywords (Static Analysis)
             parsed = sqlparse.parse(query)
             if not parsed:
-                span.set_status(Status(StatusCode.ERROR))
                 return "Error: No SQL statement found."
             
-            # Iterate through tokens to check for forbidden keywords
             for statement in parsed:
                 for token in statement.flatten():
                     if token.ttype == sqlparse.tokens.Keyword.DML or token.ttype == sqlparse.tokens.Keyword.DDL:
                          if token.value.upper() in FORBIDDEN_KEYWORDS:
-                             err = f"Error: Mutable operation '{token.value.upper()}' is not allowed in Read-Only mode."
-                             span.set_status(Status(StatusCode.ERROR, err))
-                             return err
-                    # Also check raw value just in case parser misses DML type
+                             return f"Error: Mutable operation '{token.value.upper()}' is not allowed in Read-Only mode."
                     if token.value.upper() in FORBIDDEN_KEYWORDS:
-                         err = f"Error: Forbidden keyword '{token.value.upper()}' detected."
-                         span.set_status(Status(StatusCode.ERROR, err))
-                         return err
+                         return f"Error: Forbidden keyword '{token.value.upper()}' detected."
 
-            return "VALID"
+            # 2. Check Syntax using SQLite EXPLAIN (Dynamic Analysis)
+            session = get_session()
+            try:
+                # Use EXPLAIN QUERY PLAN to validate syntax without executing
+                session.execute(text(f"EXPLAIN QUERY PLAN {query}"))
+                return "VALID"
+            except Exception as db_err:
+                return f"Syntax Error: {str(db_err)}"
+            finally:
+                session.close()
+
         except Exception as e:
             logger.error(f"SQL validation error: {e}")
             span.record_exception(e)
             span.set_status(Status(StatusCode.ERROR))
-            return f"Error: The SQL query provided is invalid or contains syntax errors. Details: {str(e)}"
+            return f"Error: Validation failed. {str(e)}"
 
 def execute_sql(query: str) -> str:
     """
