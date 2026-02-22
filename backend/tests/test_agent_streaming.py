@@ -1,9 +1,42 @@
 import pytest
 from fastapi.testclient import TestClient
+from unittest.mock import MagicMock, AsyncMock
 from backend.main import app
+from backend.core.agent_manager import agent_manager
+from backend.core.generic_types import StreamChunk
 import json
 
 client = TestClient(app)
+
+@pytest.fixture(autouse=True)
+def mock_agent_runner():
+    """
+    Mocks the AgentManager's runner to avoid hitting the real LLM API.
+    """
+    original_runner = agent_manager.runner
+    
+    mock_runner = MagicMock()
+    async def mock_run_stream(user_id, session_id, message):
+        # 1. Thinking
+        yield StreamChunk(is_thinking=True, tool_name="schema_tool", tool_input={"action": "describe", "table": "flights"})
+        
+        # 2. Text Response
+        response_text = (
+            "The flights table contains columns for id, origin, destination, "
+            "and departure_time. It links to pilots and planes tables."
+        )
+        yield StreamChunk(text=response_text)
+        
+        # 3. Complete
+        yield StreamChunk(is_complete=True)
+
+    mock_runner.run_stream = mock_run_stream
+    agent_manager.runner = mock_runner
+    
+    yield
+    
+    # Restore original runner
+    agent_manager.runner = original_runner
 
 def test_chat_streaming_end_to_end():
     """

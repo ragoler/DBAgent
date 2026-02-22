@@ -12,6 +12,7 @@ The proposed technology stack is:
 # Building and Running
 
 This is a specification document, so there is no code to run yet. The implementation will follow the roadmap outlined in the `DatabaseAgenticSystem.pdf`.
+Add depenedencies to requirements.txt and not run directly pip install for a dependency 
 
 **TODO:** Add build and run commands once the project is initialized.
 

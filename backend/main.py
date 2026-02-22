@@ -7,12 +7,15 @@ from pydantic import BaseModel
 import logging
 
 from backend.core.agent_manager import agent_manager
+from backend.core.telemetry import setup_telemetry, instrument_adk_agents
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Database Agentic System API")
+setup_telemetry(app)
+instrument_adk_agents()
 
 # Configure CORS
 app.add_middleware(

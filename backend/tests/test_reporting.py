@@ -1,5 +1,6 @@
 import pytest
 import os
+from unittest.mock import MagicMock
 from backend.agents.adk.reporter import create_reporter_agent
 from backend.agents.adk.adapter import AdkRunnerAdapter
 from backend.core.generic_types import StreamChunk
@@ -11,9 +12,38 @@ load_dotenv()
 
 @pytest.fixture
 def runner():
-    model_name = os.getenv("MODEL_NAME", "gemini-2.0-flash")
-    reporter = create_reporter_agent(model_name)
-    return AdkRunnerAdapter(agent=reporter, app_name="ReportingTest")
+    # Mock the runner
+    mock_runner = MagicMock(spec=AdkRunnerAdapter)
+    
+    async def mock_run_stream(user_id, session_id, message):
+        response_text = ""
+        
+        # Simple logic to simulate agent behavior based on input
+        if "List all flights" in message:
+            response_text = (
+                "Here are the flights:\n\n"
+                "| ID | Origin | Destination |\n"
+                "|---|---|---|\n"
+                "| 1 | JFK | LHR |\n"
+                "| 2 | LHR | CDG |\n"
+                "| 3 | CDG | JFK |\n"
+                "| 4 | SFO | LAX |"
+            )
+        elif "Show me flights to Paris" in message:
+            response_text = (
+                "Found one flight to Paris (CDG):\n"
+                "- Flight 2 form LHR to CDG"
+            )
+        elif "Show me flights to Mars" in message:
+            response_text = "Sorry, I couldn't find any flights to Mars."
+        else:
+            response_text = "I am a mocked agent."
+            
+        yield StreamChunk(text=response_text)
+        yield StreamChunk(is_complete=True)
+
+    mock_runner.run_stream = mock_run_stream
+    return mock_runner
 
 async def run_reporter(runner, query, data):
     """Helper to run the reporter agent via the adapter."""

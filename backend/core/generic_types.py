@@ -10,4 +10,5 @@ class StreamChunk(BaseModel):
     text: Optional[str] = None
     is_thinking: bool = False
     tool_name: Optional[str] = None
+    tool_input: Optional[Dict[str, Any]] = None
     is_complete: bool = False

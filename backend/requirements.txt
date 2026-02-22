@@ -8,3 +8,6 @@ sqlparse
 pytest
 httpx
 PyYAML
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-instrumentation-fastapi

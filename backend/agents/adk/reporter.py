@@ -33,7 +33,7 @@ def create_reporter_agent(model_name: str) -> LlmAgent:
             "\n- **CHART EXAMPLE (Given RAW DATABASE DATA: `[('JFK', 10), ('LHR', 5)]`)**:\n"
             "Here is a bar chart showing the number of flights per origin."
             "\n```json"
-            "\n{\"chart\": {\"type\": \"bar\"}, \"series\": [{\"name\": \"Flights\", \"data\": [10, 5]}], \"xaxis\": {\"categories\": [\"JFK\", \"LHR\"]}, \"theme\": {\"mode\": \"dark\"}}"
+            '\n{"chart": {"type": "bar"}, "series": [{"name": "Flights", "data": [10, 5]}], "xaxis": {"categories": ["JFK", "LHR"]}, "theme": {"mode": "dark"}}'
             "\n```"
             "\n\n--- STYLE GUIDELINES ---"
             "\n- Be concise and polite. Do not mention the raw data or the query in your response."

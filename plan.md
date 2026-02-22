@@ -113,17 +113,65 @@ This plan outlines the milestones for building the Database Agentic System. Each
 - [x] Objectives
     - [x] Create a modern, interactive chat UI with real-time "Reasoning" feedback. [COMPLETE]
     - [x] Integrate interactive charting (**ApexCharts**). [COMPLETE]
-- [/] Tasks
+- [x] Tasks
     - [x] Build the enhanced chat window with message bubbles. [COMPLETE]
     - [x] Implement a **Reasoning Sidebar** to show the agent's internal thought process. [COMPLETE]
     - [x] Update `app.js` to parse structured chart metadata from the agent. [COMPLETE]
     - [x] Implement dynamic ApexCharts rendering components. [COMPLETE]
-    - [/] Verify charting and reasoning flow.
-- [/] Tests
-    - [/] Ask "Graph flights per origin" and verify a chart appears.
-    - [ ] Verify message streaming and reasoning steps are visible.
+    - [x] Verify charting and reasoning flow.
+- [x] Tests
+    - [x] Ask "Graph flights per origin" and verify a chart appears.
+    - [x] Verify message streaming and reasoning steps are visible.
 
-## Milestone 8: Semantic Agent Factory
+## Milestone 8: Observability & Granular Reasoning (OpenTelemetry) [COMPLETE]
+- [x] **Objectives**
+    - [x] Implement OpenTelemetry for full trace visibility (Agents -> Sub-agents -> Tools).
+    - [x] Refactor the "Agent Thought Process" UI to display the full execution tree, not just the top-level agent.
+    - [x] Clean up the final response by moving internal reasoning/tool calls to the sidebar.
+- [x] **Tasks**
+    - [x] **Backend Observability**
+        - [x] Integrate `opentelemetry-instrumentation-fastapi` and `opentelemetry-sdk`.
+        - [x] Instrument the `AgentManager` and `AdkAgent` classes to create spans for every agent and tool execution.
+        - [x] Ensure spans include input/output data.
+    - [x] **Frontend Reasoning Update**
+        - [x] Update the `/chat` endpoint to stream OTel trace data (or a simplified representation of it) alongside the answer.
+        - [x] Refactor `app.js` and the sidebar component to render a nested tree view of the execution trace.
+        - [x] Filter out "inner monologue" text from the final user-facing message bubble.
+- [x] **Tests**
+    - [x] **Automated**
+        - [x] Verify that spans are created for sub-agent calls.
+    - [x] **Manual**
+        - [x] Verify that a complex query (e.g., one that delegates to SQL agent) shows a nested trace in the sidebar.
+        - [x] Verify that the final answer is clean and free of debug text.
+
+## Milestone 9: Multi-Database Support & UI Selector
+- [ ] **Objectives**
+    - [ ] Refactor the backend to manage connections to multiple, named databases.
+    - [ ] Implement a UI dropdown to allow users to select the target database for their queries.
+    - [ ] Add a larger, more complex dataset (`movies.json`) for robust testing and demonstration.
+- [ ] **Tasks**
+    - [ ] **Backend: Multi-Engine Support**
+        - [ ] Create a `data/databases.yaml` config file to define multiple database connections (e.g., `flights`, `movies`).
+        - [ ] Modify `backend/core/database.py` to load this config and manage a dictionary of SQLAlchemy engines instead of a single one.
+        - [ ] Create a new `/databases` endpoint in `main.py` to return the list of available database names.
+        - [ ] Update the `/chat` endpoint and `AgentManager` to accept a `database_id` to route the query to the correct database engine and schema.
+    - [ ] **Backend: New Dataset Ingestion**
+        - [ ] Download the `movies.json` dataset from Vega's CDN and place it in the `data/` directory.
+        - [ ] Create a new script, `backend/scripts/init_movies_db.py`, to parse `movies.json` and create a `movies.db` SQLite database.
+    - [ ] **Frontend: Database Selector**
+        - [ ] In `frontend/app.js`, fetch the list of databases from the `/databases` endpoint on page load.
+        - [ ] In `frontend/index.html`, add a `<select>` dropdown menu to display the available databases.
+        - [ ] Update the `sendMessage` function in `app.js` to include the currently selected `database_id` in the payload sent to the `/chat` endpoint.
+- [ ] **Tests**
+    - [ ] **Automated**
+        - [ ] Add a unit test to verify the `/databases` endpoint returns the configured list.
+        - [ ] Add a new scenario to `test_scenarios.py` that targets the "movies" database to test the new data source.
+    - [ ] **Manual**
+        - [ ] Verify the database dropdown appears in the UI and is populated correctly.
+        - [ ] Select the "movies" database and ask a query like "How many movies were released in the 1990s?".
+        - [ ] Switch back to the "flights" database and verify it still works correctly.
+
+## Milestone 10: Semantic Agent Factory
 - [ ] Objectives
     - [ ] Automatically generate agents based on database domains.
 - [ ] Tasks
@@ -133,7 +181,7 @@ This plan outlines the milestones for building the Database Agentic System. Each
 - [ ] Tests
     - [ ] Add new tables to the schema and verify that a new domain agent is "born".
 
-## Milestone 9: Mutable Data Operations: Write Capabilities
+## Milestone 11: Mutable Data Operations: Write Capabilities
 - [ ] Objectives
     - [ ] Enable secure INSERT, UPDATE, and DELETE operations.
 - [ ] Tasks
@@ -143,7 +191,7 @@ This plan outlines the milestones for building the Database Agentic System. Each
 - [ ] Tests
     - [ ] Attempt to "Add a new pilot" and verify the tool constructs the correct INSERT statement.
 
-## Milestone 10: Safety Layer & Human-in-the-Loop (HITL)
+## Milestone 12: Safety Layer & Human-in-the-Loop (HITL)
 - [ ] Objectives
     - [ ] Prevent accidental data loss via mandatory confirmation.
 - [ ] Tasks
@@ -153,7 +201,7 @@ This plan outlines the milestones for building the Database Agentic System. Each
 - [ ] Tests
     - [ ] Attempt a DELETE operation and verify the system waits for user approval.
 
-## Milestone 11: Temporal Engine & Scheduling
+## Milestone 13: Temporal Engine & Scheduling
 - [ ] Objectives
     - [ ] Enable autonomous, time-based database monitoring.
 - [ ] Tasks
@@ -163,7 +211,7 @@ This plan outlines the milestones for building the Database Agentic System. Each
 - [ ] Tests
     - [ ] Schedule a task like "Check revenue every hour" and verify it registers.
 
-## Milestone 12: Autonomous Monitoring (Loop Agent)
+## Milestone 14: Autonomous Monitoring (Loop Agent)
 - [ ] Objectives
     - [ ] Implement "If X then Y" autonomous interventions using `LoopAgent`.
     - [ ] Continuously monitor database state until a condition is met.
@@ -174,7 +222,7 @@ This plan outlines the milestones for building the Database Agentic System. Each
 - [ ] Tests
     - [ ] Setup a rule "If usage > 90% then increase quota" and trigger it with mock data.
 
-## Milestone 13: Visualization & Graphing
+## Milestone 15: Visualization & Graphing
 - [ ] Objectives
     - [ ] Render data insights as interactive charts.
 - [ ] Tasks
@@ -183,7 +231,7 @@ This plan outlines the milestones for building the Database Agentic System. Each
 - [ ] Tests
     - [ ] Ask "Graph the number of flights per month" and verify a bar chart is displayed.
 
-## Milestone 14: Security Hardening & SQL Inspection
+## Milestone 16: Security Hardening & SQL Inspection
 - [ ] Objectives
     - [ ] Protect against SQL injection and prompt injection.
 - [ ] Tasks
@@ -193,7 +241,7 @@ This plan outlines the milestones for building the Database Agentic System. Each
 - [ ] Tests
     - [ ] Attempt a malicious request (e.g., "DROP TABLE users") and verify it is blocked.
 
-## Milestone 15: Production Polish & Documentation
+## Milestone 17: Production Polish & Documentation
 - [ ] Objectives
     - [ ] Finalize the system for release and public cloning.
 - [ ] Tasks

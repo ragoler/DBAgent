@@ -4,6 +4,7 @@ from typing import Any
 from google.adk.agents import LlmAgent
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
+from opentelemetry import trace
 from backend.agents.adk.schema import create_schema_agent
 from backend.agents.adk.sql_sequence import create_sql_sequence_agent
 from backend.core.tools.report_tools import generate_summary_report
@@ -13,32 +14,39 @@ logger = logging.getLogger(__name__)
 
 def run_sub_agent(agent_creator, query: str, app_name: str) -> str:
     """Helper to run ephemeral sub-agents"""
-    model_name = os.getenv("MODEL_NAME", "gemini-2.0-flash")
-    agent = agent_creator(model_name)
+    tracer = trace.get_tracer(__name__)
     
-    runner = Runner(
-        agent=agent,
-        session_service=InMemorySessionService(),
-        app_name=app_name,
-        auto_create_session=True
-    )
-    
-    from google.genai import types
-    user_msg = types.Content(role='user', parts=[types.Part(text=query)])
-    
-    response_text = ""
-    try:
-        # Use dummy IDs
-        for event in runner.run(new_message=user_msg, user_id="router_delegate", session_id="ephemeral_session"):
-            if event.content and event.content.parts:
-                for part in event.content.parts:
-                    if part.text:
-                        response_text += part.text
-    except Exception as e:
-        logger.error(f"Error in {app_name}: {e}")
-        return f"Error: {str(e)}"
+    # Create a span for the sub-agent execution
+    # Note: session_id is automatically injected by StreamSpanProcessor if context is set
+    with tracer.start_as_current_span(f"SubAgent: {app_name}", attributes={"query": query}) as span:
+        model_name = os.getenv("MODEL_NAME", "gemini-2.0-flash")
+        agent = agent_creator(model_name)
         
-    return ensure_chart_tags(response_text)
+        runner = Runner(
+            agent=agent,
+            session_service=InMemorySessionService(),
+            app_name=app_name,
+            auto_create_session=True
+        )
+        
+        from google.genai import types
+        user_msg = types.Content(role='user', parts=[types.Part(text=query)])
+        
+        response_text = ""
+        try:
+            # Use dummy IDs for the internal session
+            for event in runner.run(new_message=user_msg, user_id="router_delegate", session_id="ephemeral_session"):
+                if event.content and event.content.parts:
+                    for part in event.content.parts:
+                        if part.text:
+                            response_text += part.text
+        except Exception as e:
+            logger.error(f"Error in {app_name}: {e}")
+            span.record_exception(e)
+            span.set_status(trace.Status(trace.StatusCode.ERROR))
+            return f"Error: {str(e)}"
+            
+        return ensure_chart_tags(response_text)
 
 def delegate_to_schema_explorer(query: str) -> str:
     """Delegates schema questions (e.g. 'list tables', 'columns') to the Schema Agent."""

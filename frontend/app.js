@@ -5,6 +5,7 @@ const reasoningSteps = document.getElementById('reasoning-steps');
 const clearBtn = document.getElementById('clear-btn');
 
 const API_URL = '';
+const traceMap = new Map();
 
 // --- Core UI Helpers ---
 
@@ -28,25 +29,6 @@ function appendMessage(role, content = '') {
     return text;
 }
 
-function addReasoningStep(tool, input) {
-    // Clear empty state if it exists
-    const emptyState = reasoningSteps.querySelector('.empty-state');
-    if (emptyState) emptyState.remove();
-
-    const stepDiv = document.createElement('div');
-    stepDiv.className = 'step';
-
-    const title = document.createElement('h4');
-    title.innerHTML = `<span>🛠️ Call: ${tool}</span> <small>${new Date().toLocaleTimeString()}</small>`;
-
-    const body = document.createElement('pre');
-    body.textContent = typeof input === 'string' ? input : JSON.stringify(input, null, 2);
-
-    stepDiv.appendChild(title);
-    stepDiv.appendChild(body);
-    reasoningSteps.prepend(stepDiv); // Show newest first
-}
-
 function clearChat() {
     chatMessages.innerHTML = '';
     reasoningSteps.innerHTML = `
@@ -55,7 +37,130 @@ function clearChat() {
             <p>Agent reasoning steps will appear here in real-time...</p>
         </div>
     `;
+    traceMap.clear();
     appendMessage('agent', 'Chat cleared. How can I help you?');
+}
+
+// --- Trace Visualization Logic ---
+
+function handleTrace(trace) {
+    // Remove empty state if present
+    const emptyState = reasoningSteps.querySelector('.empty-state');
+    if (emptyState) emptyState.remove();
+
+    const { event, data } = trace;
+    const { span_id, parent_id, name, status, attributes } = data;
+
+    if (event === 'start') {
+        // Determine type (Agent or Tool)
+        let type = 'unknown';
+        let icon = '❓';
+        let label = name;
+
+        if (name.startsWith('Agent:')) {
+            type = 'agent';
+            icon = '🤖';
+            label = name.replace('Agent: ', '');
+        } else if (name.startsWith('Tool:')) {
+            type = 'tool';
+            icon = '🛠️';
+            label = name.replace('Tool: ', '');
+        } else if (name.startsWith('SubAgent:')) {
+            type = 'subagent';
+            icon = '🔄';
+            label = name.replace('SubAgent: ', '');
+        } else {
+            type = 'generic';
+            icon = '⚡';
+        }
+
+        // Create tree item using details/summary for proper nesting
+        const details = document.createElement('details');
+        details.id = `trace-${span_id}`;
+        details.className = `trace-node ${type}`;
+        details.open = true; // Auto-expand by default
+
+        const summary = document.createElement('summary');
+        summary.className = 'trace-header';
+        
+        const labelSpan = document.createElement('span');
+        labelSpan.className = 'trace-label';
+        labelSpan.innerHTML = `${icon} <strong>${label}</strong>`;
+        
+        const statusSpan = document.createElement('span');
+        statusSpan.className = 'trace-status running';
+        statusSpan.textContent = '...'; // Minimalist running indicator
+        
+        summary.appendChild(labelSpan);
+        summary.appendChild(statusSpan);
+        details.appendChild(summary);
+
+        // Content container (for attributes/logs)
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'trace-content';
+        
+        // Show inputs if available
+        if (attributes && (attributes.query || attributes.tool_input)) {
+            const inputPre = document.createElement('div');
+            inputPre.className = 'trace-input';
+            let inputContent = attributes.query || attributes.tool_input;
+            if (typeof inputContent === 'object') {
+                inputContent = JSON.stringify(inputContent, null, 2);
+            }
+            inputPre.textContent = `Input: ${inputContent}`;
+            contentDiv.appendChild(inputPre);
+        }
+        
+        details.appendChild(contentDiv);
+
+        // Container for child nodes
+        const childrenDiv = document.createElement('div');
+        childrenDiv.id = `children-${span_id}`;
+        childrenDiv.className = 'trace-children';
+        details.appendChild(childrenDiv);
+
+        // Append to parent or root
+        if (parent_id && traceMap.has(parent_id)) {
+            const parentChildrenContainer = document.getElementById(`children-${parent_id}`);
+            if (parentChildrenContainer) {
+                parentChildrenContainer.appendChild(details);
+            } else {
+                reasoningSteps.appendChild(details); // Fallback
+            }
+        } else {
+            reasoningSteps.appendChild(details);
+        }
+        
+        traceMap.set(span_id, details);
+        
+        // Auto-scroll to bottom
+        reasoningSteps.scrollTop = reasoningSteps.scrollHeight;
+
+    } else if (event === 'end') {
+        const details = document.getElementById(`trace-${span_id}`);
+        if (details) {
+            const statusSpan = details.querySelector('.trace-status');
+            const summary = details.querySelector('summary');
+            
+            if (statusSpan) {
+                if (status === 'ERROR') {
+                    statusSpan.className = 'trace-status error';
+                    statusSpan.textContent = 'FAILED';
+                    summary.classList.add('status-error');
+                } else {
+                    statusSpan.className = 'trace-status done';
+                    statusSpan.textContent = 'DONE'; // Or checkmark
+                    statusSpan.innerHTML = '✓';
+                    summary.classList.add('status-success');
+                }
+            }
+            
+            // Optional: Auto-collapse successful generic/tool nodes to reduce clutter?
+            // if (status !== 'ERROR' && !name.startsWith('Agent:')) {
+            //    details.open = false;
+            // }
+        }
+    }
 }
 
 // --- Charting Logic ---
@@ -67,8 +172,24 @@ function tryRenderChart(container, text) {
     let newText = text;
 
     while ((match = chartRegex.exec(text)) !== null) {
+        const jsonStr = match[1];
+        let chartConfig;
+        
         try {
-            const chartConfig = JSON.parse(match[1]);
+            chartConfig = JSON.parse(jsonStr);
+        } catch (e) {
+            // Fallback: Try to fix common LLM JSON errors (like over-escaping)
+            try {
+                // Replace \" with " and then retry
+                const fixedStr = jsonStr.replace(/\\"/g, '"');
+                chartConfig = JSON.parse(fixedStr);
+            } catch (e2) {
+                console.error("Failed to parse chart JSON:", e, e2);
+                continue; // Skip this chart
+            }
+        }
+
+        try {
             const chartId = 'chart-' + Math.random().toString(36).substr(2, 9);
 
             // Create a placeholder in the text where the chart will live
@@ -84,7 +205,7 @@ function tryRenderChart(container, text) {
                 }
             }, 100);
         } catch (e) {
-            console.error("Failed to parse chart JSON:", e);
+            console.error("Error rendering chart:", e);
         }
     }
     return newText;
@@ -126,9 +247,12 @@ async function sendMessage() {
                     try {
                         const data = JSON.parse(line.slice(6));
 
-                        if (data.thought) {
-                            addReasoningStep(data.thought.tool, data.thought.input);
+                        if (data.trace) {
+                            handleTrace(data.trace);
                         }
+
+                        // We rely on traces for reasoning now.
+                        // data.thought is ignored.
 
                         if (data.text) {
                             accumulatedText += data.text;

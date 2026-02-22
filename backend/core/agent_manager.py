@@ -1,8 +1,9 @@
 import os
 import logging
+import asyncio
 from typing import AsyncGenerator
 from dotenv import load_dotenv
-
+from backend.core import telemetry
 from backend.core.schema_parser import SchemaParser
 from backend.core.schema_registry import schema_registry
 from backend.agents.adk.router import create_root_router
@@ -39,20 +40,75 @@ class AgentManager:
         Yields JSON-encoded strings for structured handling in the frontend.
         """
         import json
-        async for chunk in self.runner.run_stream(user_id=user_id, session_id=session_id, message=message):
-            data = {}
-            if chunk.text:
-                data["text"] = chunk.text
-            if chunk.is_thinking:
-                thought = {"tool": chunk.tool_name}
-                if hasattr(chunk, "tool_input") and chunk.tool_input:
-                    thought["input"] = chunk.tool_input
-                data["thought"] = thought
-            if chunk.is_complete:
-                data["complete"] = True
-            
-            if data:
-                yield f"data: {json.dumps(data)}\n\n"
+        
+        # Create a combined queue for agent output + telemetry
+        queue = asyncio.Queue()
+        
+        # Register this queue to receive OTel spans
+        telemetry.register_session_queue(session_id, queue)
+        
+        # Background task to push agent chunks to the queue
+        async def run_agent():
+            try:
+                async for chunk in self.runner.run_stream(user_id=user_id, session_id=session_id, message=message):
+                    await queue.put(chunk)
+            except Exception as e:
+                logger.error(f"Error in run_agent: {e}")
+                await queue.put(e)
+            finally:
+                # Use None as sentinel for end of agent stream
+                # BUT wait, telemetry might still be flushing?
+                # Usually telemetry is synchronous or very fast after function return.
+                # However, if we finish the agent stream, we are mostly done.
+                await queue.put(None)
+
+        task = asyncio.create_task(run_agent())
+        
+        try:
+            while True:
+                item = await queue.get()
+                
+                # End of stream sentinel
+                if item is None:
+                    # Check if task is actually done or failed
+                    if task.done() and task.exception():
+                        logger.error(f"Task failed: {task.exception()}")
+                    break
+                
+                # Handle Errors
+                if isinstance(item, Exception):
+                    yield f"data: {json.dumps({'error': str(item)})}\n\n"
+                    # We might want to continue or break? 
+                    # Usually an error in runner is fatal for that turn.
+                    break
+
+                # Handle Telemetry Data (Dicts)
+                if isinstance(item, dict):
+                     yield f"data: {json.dumps({'trace': item})}\n\n"
+                     continue
+
+                # Handle Agent Stream Chunks
+                # Assuming it's a StreamChunk object (has 'text', 'is_thinking', etc.)
+                data = {}
+                if hasattr(item, 'text') and item.text:
+                    data["text"] = item.text
+                if hasattr(item, 'is_thinking') and item.is_thinking:
+                    # We still send this for legacy support, or maybe disable it?
+                    # Let's keep it but mark it so frontend knows.
+                    thought = {"tool": item.tool_name}
+                    if hasattr(item, "tool_input") and item.tool_input:
+                        thought["input"] = item.tool_input
+                    data["thought"] = thought
+                if hasattr(item, 'is_complete') and item.is_complete:
+                    data["complete"] = True
+                
+                if data:
+                    yield f"data: {json.dumps(data)}\n\n"
+                    
+        finally:
+            telemetry.unregister_session_queue(session_id)
+            if not task.done():
+                task.cancel()
 
 # Singleton instance
 agent_manager = AgentManager()
