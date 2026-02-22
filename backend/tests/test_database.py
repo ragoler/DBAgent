@@ -1,9 +1,9 @@
-from backend.core.database import SessionLocal, engine, Base
+from backend.core.database import get_session, get_engine, Base
 from sqlalchemy import text
 
 def test_db_connection():
     """Verify that we can connect to the database and create a session."""
-    db = SessionLocal()
+    db = get_session()
     try:
         # Check if we can execute a simple query
         result = db.execute(text("SELECT 1")).fetchone()

@@ -1,0 +1,11 @@
+databases:
+- id: flights
+  name: Flight Database
+  type: sqlite
+  connection_string: sqlite:///data/flights.db
+  schema_file: data/flight_schema.yaml
+- id: movies
+  name: Movies Database
+  type: sqlite
+  connection_string: sqlite:///data/movies.db
+  schema_file: data/movies_schema.yaml

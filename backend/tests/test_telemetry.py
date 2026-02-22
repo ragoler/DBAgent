@@ -11,8 +11,8 @@ client = TestClient(app)
 def setup_schema():
     """Loads the schema YAML into the registry for tools to work."""
     parser = SchemaParser()
-    metadata = parser.parse_yaml("data/schema.yaml")
-    schema_registry.load_schema(metadata)
+    metadata = parser.parse_yaml("data/flight_schema.yaml")
+    schema_registry.load_schema("flights", metadata)
 
 def test_telemetry_streaming():
     """

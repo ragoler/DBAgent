@@ -14,8 +14,8 @@ from backend.tests.test_sql_agent import setup_test_data
 def setup_schema():
     """Loads the schema YAML into the registry for tools to work."""
     parser = SchemaParser()
-    metadata = parser.parse_yaml("data/schema.yaml")
-    schema_registry.load_schema(metadata)
+    metadata = parser.parse_yaml("data/flight_schema.yaml")
+    schema_registry.load_schema("flights", metadata)
 
 @pytest.fixture
 def runner():

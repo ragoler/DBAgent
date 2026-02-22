@@ -5,9 +5,78 @@ const userInput = document.getElementById('user-input');
 const sendBtn = document.getElementById('send-btn');
 const reasoningSteps = document.getElementById('reasoning-steps');
 const clearBtn = document.getElementById('clear-btn');
+const databaseSelect = document.getElementById('database-select');
 
-const API_URL = '';
+const API_URL = ''; // Relative path for same-origin
 const traceMap = new Map();
+
+// --- Initialization ---
+
+async function fetchDatabases() {
+    console.log("Fetching databases...");
+    try {
+        const response = await fetch(`${API_URL}/databases`);
+        console.log("Database fetch response status:", response.status);
+        
+        if (!response.ok) throw new Error(`Failed to fetch databases: ${response.status} ${response.statusText}`);
+        
+        const databases = await response.json();
+        console.log("Databases loaded:", databases);
+        
+        databaseSelect.innerHTML = '';
+        databases.forEach(db => {
+            const option = document.createElement('option');
+            option.value = db.id;
+            option.textContent = db.name;
+            databaseSelect.appendChild(option);
+        });
+        
+        // Select first one by default if available
+        if (databases.length > 0) {
+            databaseSelect.value = databases[0].id;
+        } else {
+             databaseSelect.innerHTML = '<option disabled>No databases found</option>';
+        }
+    } catch (e) {
+        console.error("Error loading databases:", e);
+        databaseSelect.innerHTML = '<option disabled>Error loading databases</option>';
+    }
+}
+
+function initApp() {
+    console.log("App initializing...");
+    fetchDatabases();
+    
+    // --- Navigation Logic ---
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const text = item.querySelector('span').textContent.trim();
+            
+            // Remove active class from all
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            item.classList.add('active');
+            
+            if (text === 'Database') {
+                // Focus and try to open the selector
+                if (databaseSelect) {
+                    databaseSelect.focus();
+                    // Click simulation for better UX (might not work in all browsers due to security)
+                    try {
+                        databaseSelect.click();
+                    } catch (e) {
+                        // Ignore click errors
+                    }
+                }
+            }
+        });
+    });
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}
 
 // --- Core UI Helpers ---
 
@@ -241,6 +310,12 @@ async function sendMessage() {
     const text = userInput.value.trim();
     if (!text) return;
 
+    const databaseId = databaseSelect.value;
+    if (!databaseId) {
+        alert("Please select a database first.");
+        return;
+    }
+
     userInput.value = '';
     appendMessage('user', text);
 
@@ -251,7 +326,10 @@ async function sendMessage() {
         const response = await fetch(`${API_URL}/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: text })
+            body: JSON.stringify({ 
+                message: text,
+                database_id: databaseId
+            })
         });
 
         if (!response.ok) throw new Error('Network error');

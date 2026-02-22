@@ -22,7 +22,7 @@ def setup_registry():
             ]
         )
     ])
-    schema_registry.load_schema(metadata)
+    schema_registry.load_schema("flights", metadata)
 
 def test_list_tables():
     tables = list_tables()

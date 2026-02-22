@@ -1,0 +1,88 @@
+tables:
+- name: directors
+  description: Information about movie directors.
+  columns:
+  - name: id
+    type: INTEGER
+    primary_key: true
+    description: Unique identifier.
+  - name: name
+    type: VARCHAR
+    description: Full name of the director.
+- name: actors
+  description: Information about movie actors.
+  columns:
+  - name: id
+    type: INTEGER
+    primary_key: true
+    description: Unique identifier.
+  - name: name
+    type: VARCHAR
+    description: Full name of the actor.
+- name: movies
+  description: Contains a dataset of movies with financial and rating information.
+  columns:
+  - name: id
+    type: INTEGER
+    primary_key: true
+    description: Unique movie identifier.
+  - name: title
+    type: INTEGER
+    description: 'Movie attribute: Title'
+  - name: us_gross
+    type: INTEGER
+    description: 'Movie attribute: US Gross'
+  - name: worldwide_gross
+    type: INTEGER
+    description: 'Movie attribute: Worldwide Gross'
+  - name: us_dvd_sales
+    type: INTEGER
+    description: 'Movie attribute: US DVD Sales'
+  - name: production_budget
+    type: INTEGER
+    description: 'Movie attribute: Production Budget'
+  - name: release_date
+    type: VARCHAR
+    description: 'Movie attribute: Release Date'
+  - name: mpaa_rating
+    type: INTEGER
+    description: 'Movie attribute: MPAA Rating'
+  - name: running_time_min
+    type: INTEGER
+    description: 'Movie attribute: Running Time min'
+  - name: distributor
+    type: INTEGER
+    description: 'Movie attribute: Distributor'
+  - name: source
+    type: INTEGER
+    description: 'Movie attribute: Source'
+  - name: major_genre
+    type: INTEGER
+    description: 'Movie attribute: Major Genre'
+  - name: creative_type
+    type: INTEGER
+    description: 'Movie attribute: Creative Type'
+  - name: rotten_tomatoes_rating
+    type: INTEGER
+    description: 'Movie attribute: Rotten Tomatoes Rating'
+  - name: imdb_rating
+    type: INTEGER
+    description: 'Movie attribute: IMDB Rating'
+  - name: imdb_votes
+    type: INTEGER
+    description: 'Movie attribute: IMDB Votes'
+  - name: director_id
+    type: INTEGER
+    foreign_key: directors.id
+    description: ID of the director.
+- name: movie_actors
+  description: Join table linking movies to actors.
+  columns:
+  - name: movie_id
+    type: INTEGER
+    foreign_key: movies.id
+    description: ID of the movie.
+  - name: actor_id
+    type: INTEGER
+    foreign_key: actors.id
+    description: ID of the actor.

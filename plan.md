@@ -144,32 +144,32 @@ This plan outlines the milestones for building the Database Agentic System. Each
         - [x] Verify that a complex query (e.g., one that delegates to SQL agent) shows a nested trace in the sidebar.
         - [x] Verify that the final answer is clean and free of debug text.
 
-## Milestone 9: Multi-Database Support & UI Selector
-- [ ] **Objectives**
-    - [ ] Refactor the backend to manage connections to multiple, named databases.
-    - [ ] Implement a UI dropdown to allow users to select the target database for their queries.
-    - [ ] Add a larger, more complex dataset (`movies.json`) for robust testing and demonstration.
-- [ ] **Tasks**
-    - [ ] **Backend: Multi-Engine Support**
-        - [ ] Create a `data/databases.yaml` config file to define multiple database connections (e.g., `flights`, `movies`).
-        - [ ] Modify `backend/core/database.py` to load this config and manage a dictionary of SQLAlchemy engines instead of a single one.
-        - [ ] Create a new `/databases` endpoint in `main.py` to return the list of available database names.
-        - [ ] Update the `/chat` endpoint and `AgentManager` to accept a `database_id` to route the query to the correct database engine and schema.
-    - [ ] **Backend: New Dataset Ingestion**
-        - [ ] Download the `movies.json` dataset from Vega's CDN and place it in the `data/` directory.
-        - [ ] Create a new script, `backend/scripts/init_movies_db.py`, to parse `movies.json` and create a `movies.db` SQLite database.
-    - [ ] **Frontend: Database Selector**
-        - [ ] In `frontend/app.js`, fetch the list of databases from the `/databases` endpoint on page load.
-        - [ ] In `frontend/index.html`, add a `<select>` dropdown menu to display the available databases.
-        - [ ] Update the `sendMessage` function in `app.js` to include the currently selected `database_id` in the payload sent to the `/chat` endpoint.
-- [ ] **Tests**
-    - [ ] **Automated**
-        - [ ] Add a unit test to verify the `/databases` endpoint returns the configured list.
-        - [ ] Add a new scenario to `test_scenarios.py` that targets the "movies" database to test the new data source.
-    - [ ] **Manual**
-        - [ ] Verify the database dropdown appears in the UI and is populated correctly.
-        - [ ] Select the "movies" database and ask a query like "How many movies were released in the 1990s?".
-        - [ ] Switch back to the "flights" database and verify it still works correctly.
+## Milestone 9: Multi-Database Support & UI Selector [COMPLETE]
+- [x] **Objectives**
+    - [x] Refactor the backend to manage connections to multiple, named databases.
+    - [x] Implement a UI dropdown to allow users to select the target database for their queries.
+    - [x] Add a larger, more complex dataset (`movies.json`) for robust testing and demonstration.
+- [x] **Tasks**
+    - [x] **Backend: Multi-Engine Support**
+        - [x] Create a `data/databases.yaml` config file to define multiple database connections (e.g., `flights`, `movies`).
+        - [x] Modify `backend/core/database.py` to load this config and manage a dictionary of SQLAlchemy engines instead of a single one.
+        - [x] Create a new `/databases` endpoint in `main.py` to return the list of available database names.
+        - [x] Update the `/chat` endpoint and `AgentManager` to accept a `database_id` to route the query to the correct database engine and schema.
+    - [x] **Backend: New Dataset Ingestion**
+        - [x] Download the `movies.json` dataset from Vega's CDN and place it in the `data/` directory.
+        - [x] Create a new script, `backend/scripts/init_movies_db.py`, to parse `movies.json` and create a `movies.db` SQLite database.
+    - [x] **Frontend: Database Selector**
+        - [x] In `frontend/app.js`, fetch the list of databases from the `/databases` endpoint on page load.
+        - [x] In `frontend/index.html`, add a `<select>` dropdown menu to display the available databases.
+        - [x] Update the `sendMessage` function in `app.js` to include the currently selected `database_id` in the payload sent to the `/chat` endpoint.
+- [x] **Tests**
+    - [x] **Automated**
+        - [x] Add a unit test to verify the `/databases` endpoint returns the configured list.
+        - [x] Add a new scenario to `test_scenarios.py` that targets the "movies" database to test the new data source.
+    - [x] **Manual**
+        - [x] Verify the database dropdown appears in the UI and is populated correctly.
+        - [x] Select the "movies" database and ask a query like "How many movies were released in the 1990s?".
+        - [x] Switch back to the "flights" database and verify it still works correctly.
 
 ## Milestone 10: Semantic Agent Factory
 - [ ] Objectives

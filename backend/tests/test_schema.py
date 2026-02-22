@@ -5,7 +5,7 @@ from backend.core.schema_registry import schema_registry
 
 def test_schema_parsing():
     """Verify that a valid schema YAML can be parsed into model objects."""
-    schema_path = os.path.join(os.getcwd(), "data", "schema.yaml")
+    schema_path = os.path.join(os.getcwd(), "data", "flight_schema.yaml")
     assert os.path.exists(schema_path)
     
     metadata = SchemaParser.parse_yaml(schema_path)
@@ -17,10 +17,10 @@ def test_schema_parsing():
 
 def test_schema_registry_lookup():
     """Verify that the registry correctly stores and retrieves metadata."""
-    schema_path = os.path.join(os.getcwd(), "data", "schema.yaml")
+    schema_path = os.path.join(os.getcwd(), "data", "flight_schema.yaml")
     metadata = SchemaParser.parse_yaml(schema_path)
     
-    schema_registry.load_schema(metadata)
+    schema_registry.load_schema("flights", metadata)
     
     # Check table listing
     tables = schema_registry.get_table_names()

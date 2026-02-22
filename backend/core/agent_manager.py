@@ -1,13 +1,15 @@
 import os
 import logging
 import asyncio
-from typing import AsyncGenerator
+import yaml
+from typing import AsyncGenerator, Optional
 from dotenv import load_dotenv
 from backend.core import telemetry
 from backend.core.schema_parser import SchemaParser
 from backend.core.schema_registry import schema_registry
 from backend.agents.adk.router import create_root_router
 from backend.agents.adk.adapter import AdkRunnerAdapter
+from backend.core.database import register_database, database_context_var
 
 load_dotenv()
 
@@ -22,24 +24,49 @@ class AgentManager:
         self.app_name = "DBAgent"
         self.model_name = os.getenv("MODEL_NAME", "gemini-2.0-flash")
         
-        # 1. Initialize Schema Registry
+        # 1. Initialize Databases and Schema Registry
         base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        schema_path = os.path.join(base_dir, "data", "schema.yaml")
-        if os.path.exists(schema_path):
-            metadata = SchemaParser.parse_yaml(schema_path)
-            schema_registry.load_schema(metadata)
+        db_config_path = os.path.join(base_dir, "data", "databases.yaml")
+        
+        if os.path.exists(db_config_path):
+            with open(db_config_path, "r") as f:
+                config = yaml.safe_load(f)
+            
+            for db in config.get("databases", []):
+                db_id = db["id"]
+                # Register Engine
+                # Resolve relative path for sqlite
+                conn_str = db["connection_string"]
+                # If it's a file path in connection string, make it absolute if needed? 
+                # SQLAlchemy usually handles it relative to CWD.
+                register_database(db_id, conn_str)
+                
+                # Load Schema
+                schema_file = os.path.join(base_dir, db["schema_file"])
+                if os.path.exists(schema_file):
+                    metadata = SchemaParser.parse_yaml(schema_file)
+                    schema_registry.load_schema(db_id, metadata)
+                else:
+                    logger.warning(f"Schema file not found for database {db_id}: {schema_file}")
+        else:
+            logger.warning(f"Database configuration not found at {db_config_path}")
         
         # 2. Initialize the platform-specific implementation
         # For now, we hardcode ADK. In the future, this could be a factory.
         self.orchestrator = create_root_router(self.model_name)
         self.runner = AdkRunnerAdapter(agent=self.orchestrator, app_name=self.app_name)
 
-    async def chat_stream(self, user_id: str, session_id: str, message: str) -> AsyncGenerator[str, None]:
+    async def chat_stream(self, user_id: str, session_id: str, message: str, database_id: Optional[str] = None) -> AsyncGenerator[str, None]:
         """
         Streams responses from the runner back to the UI.
         Yields JSON-encoded strings for structured handling in the frontend.
         """
         import json
+        
+        # Set the active database context for this request
+        token = None
+        if database_id:
+             token = database_context_var.set(database_id)
         
         # Create a combined queue for agent output + telemetry
         queue = asyncio.Queue()
@@ -109,6 +136,8 @@ class AgentManager:
             telemetry.unregister_session_queue(session_id)
             if not task.done():
                 task.cancel()
+            if token:
+                database_context_var.reset(token)
 
 # Singleton instance
 agent_manager = AgentManager()

@@ -54,6 +54,9 @@ body {
     display: flex;
     flex-direction: column;
     height: 100%;
+    overflow-y: auto; /* Allow scrolling */
+    position: relative;
+    z-index: 10;
 }
 
 .main-nav {
@@ -464,4 +467,64 @@ header {
 .empty-state i {
     font-size: 48px;
     opacity: 0.2;
+}
+
+/* Database Selector */
+.database-selector-container {
+    padding: 20px 0;
+    margin-top: auto;
+    border-top: 1px solid var(--glass-border);
+    border-bottom: 1px solid var(--glass-border);
+    margin-bottom: 20px;
+    flex-shrink: 0;
+}
+
+.database-selector-container label {
+    display: block;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+#database-select {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text-main);
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    transition: all 0.2s;
+    /* Custom Arrow */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 16px;
+}
+
+#database-select:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+#database-select:focus {
+    border-color: var(--acc-primary);
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+#database-select option {
+    background: #1e293b; /* Fallback */
+    background: var(--bg-dark);
+    color: var(--text-main);
+    padding: 8px;
+}
+
+.status-panel {
+    flex-shrink: 0;
 }
