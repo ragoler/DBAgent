@@ -22,7 +22,7 @@ class AgentManager:
     """
     def __init__(self):
         self.app_name = "DBAgent"
-        self.model_name = os.getenv("MODEL_NAME", "gemini-2.0-flash")
+        self.model_name = os.getenv("MODEL_NAME", "gemini-2.5-flash")
         
         # 1. Initialize Databases and Schema Registry
         base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

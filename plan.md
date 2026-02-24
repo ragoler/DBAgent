@@ -171,7 +171,22 @@ This plan outlines the milestones for building the Database Agentic System. Each
         - [x] Select the "movies" database and ask a query like "How many movies were released in the 1990s?".
         - [x] Switch back to the "flights" database and verify it still works correctly.
 
-## Milestone 10: Semantic Agent Factory
+## Milestone 10: GKE Deployment
+- [ ] Objectives
+    - [ ] Deploy the application to Google Kubernetes Engine (GKE).
+    - [ ] Automate infrastructure creation and deployment.
+- [ ] Tasks
+    - [ ] **Containerization**
+        - [ ] Create `Dockerfile` and `.dockerignore`.
+    - [ ] **Infrastructure**
+        - [ ] Create `infra.sh` to provision GKE cluster.
+    - [ ] **Deployment**
+        - [ ] Create `k8s/deployment.yaml` and `k8s/service.yaml`.
+        - [ ] Create `deploy.sh` for Cloud Build and kubectl application.
+- [ ] Tests
+    - [ ] Manual verification of build, infra creation, and deployment.
+
+## Milestone 11: Semantic Agent Factory
 - [ ] Objectives
     - [ ] Automatically generate agents based on database domains.
 - [ ] Tasks
@@ -181,7 +196,7 @@ This plan outlines the milestones for building the Database Agentic System. Each
 - [ ] Tests
     - [ ] Add new tables to the schema and verify that a new domain agent is "born".
 
-## Milestone 11: Mutable Data Operations: Write Capabilities
+## Milestone 12: Mutable Data Operations: Write Capabilities
 - [ ] Objectives
     - [ ] Enable secure INSERT, UPDATE, and DELETE operations.
 - [ ] Tasks
@@ -191,7 +206,7 @@ This plan outlines the milestones for building the Database Agentic System. Each
 - [ ] Tests
     - [ ] Attempt to "Add a new pilot" and verify the tool constructs the correct INSERT statement.
 
-## Milestone 12: Safety Layer & Human-in-the-Loop (HITL)
+## Milestone 13: Safety Layer & Human-in-the-Loop (HITL)
 - [ ] Objectives
     - [ ] Prevent accidental data loss via mandatory confirmation.
 - [ ] Tasks
@@ -201,7 +216,7 @@ This plan outlines the milestones for building the Database Agentic System. Each
 - [ ] Tests
     - [ ] Attempt a DELETE operation and verify the system waits for user approval.
 
-## Milestone 13: Temporal Engine & Scheduling
+## Milestone 14: Temporal Engine & Scheduling
 - [ ] Objectives
     - [ ] Enable autonomous, time-based database monitoring.
 - [ ] Tasks
@@ -211,7 +226,7 @@ This plan outlines the milestones for building the Database Agentic System. Each
 - [ ] Tests
     - [ ] Schedule a task like "Check revenue every hour" and verify it registers.
 
-## Milestone 14: Autonomous Monitoring (Loop Agent)
+## Milestone 15: Autonomous Monitoring (Loop Agent)
 - [ ] Objectives
     - [ ] Implement "If X then Y" autonomous interventions using `LoopAgent`.
     - [ ] Continuously monitor database state until a condition is met.
@@ -222,7 +237,7 @@ This plan outlines the milestones for building the Database Agentic System. Each
 - [ ] Tests
     - [ ] Setup a rule "If usage > 90% then increase quota" and trigger it with mock data.
 
-## Milestone 15: Visualization & Graphing
+## Milestone 16: Visualization & Graphing
 - [ ] Objectives
     - [ ] Render data insights as interactive charts.
 - [ ] Tasks
@@ -231,7 +246,7 @@ This plan outlines the milestones for building the Database Agentic System. Each
 - [ ] Tests
     - [ ] Ask "Graph the number of flights per month" and verify a bar chart is displayed.
 
-## Milestone 16: Security Hardening & SQL Inspection
+## Milestone 17: Security Hardening & SQL Inspection
 - [ ] Objectives
     - [ ] Protect against SQL injection and prompt injection.
 - [ ] Tasks
@@ -241,7 +256,7 @@ This plan outlines the milestones for building the Database Agentic System. Each
 - [ ] Tests
     - [ ] Attempt a malicious request (e.g., "DROP TABLE users") and verify it is blocked.
 
-## Milestone 17: Production Polish & Documentation
+## Milestone 18: Production Polish & Documentation
 - [ ] Objectives
     - [ ] Finalize the system for release and public cloning.
 - [ ] Tasks

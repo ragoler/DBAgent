@@ -19,7 +19,7 @@ async def run_sub_agent(agent_creator, query: str, app_name: str) -> str:
     # Create a span for the sub-agent execution
     # Context should propagate automatically in async
     with tracer.start_as_current_span(f"SubAgent: {app_name}", attributes={"query": query}) as span:
-        model_name = os.getenv("MODEL_NAME", "gemini-2.0-flash")
+        model_name = os.getenv("MODEL_NAME", "gemini-2.5-flash")
         agent = agent_creator(model_name)
         
         runner = Runner(
