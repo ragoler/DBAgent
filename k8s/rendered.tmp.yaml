@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ${APP_NAME}
-  namespace: ${NAMESPACE}
+  name: db-agent
+  namespace: dev
   labels:
-    app: ${APP_NAME}
+    app: db-agent
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ${APP_NAME}
+      app: db-agent
   template:
     metadata:
       labels:
-        app: ${APP_NAME}
+        app: db-agent
     spec:
-      serviceAccountName: ${KSA_NAME}
+      serviceAccountName: dbagent-ksa-dev
       containers:
-      - name: ${APP_NAME}
-        image: ${IMAGE_URL}
+      - name: db-agent
+        image: test
         ports:
         - containerPort: 8080
         envFrom:
@@ -36,4 +36,16 @@ spec:
             port: 8080
           initialDelaySeconds: 10
           periodSeconds: 10
----
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-agent-service
+  namespace: dev
+spec:
+  selector:
+    app: db-agent
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer

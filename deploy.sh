@@ -252,6 +252,5 @@ kubectl apply -f k8s/rendered.yaml
 rm k8s/rendered.yaml
 
 echo "Restarting deployment..."
-kubectl rollout restart deployment $APP_NAME -n $NAMESPACE
 
 echo "Deployment complete for $NAMESPACE namespace!"
