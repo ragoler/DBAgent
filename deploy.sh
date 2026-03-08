@@ -191,9 +191,17 @@ if [ "$SKIP_INFRA" == "false" ]; then
         gcloud iam service-accounts create $GSA_NAME --display-name="DBAgent Service Account"
         sleep 10
         add_iam_binding $PROJECT_ID "serviceAccount:$GSA_EMAIL" "roles/aiplatform.user"
+        add_iam_binding $PROJECT_ID "serviceAccount:$GSA_EMAIL" "roles/cloudbuild.builds.builder"
+        add_iam_binding $PROJECT_ID "serviceAccount:$GSA_EMAIL" "roles/container.developer"
+        add_iam_binding $PROJECT_ID "serviceAccount:$GSA_EMAIL" "roles/artifactregistry.writer"
+        add_iam_binding $PROJECT_ID "serviceAccount:$GSA_EMAIL" "roles/iam.serviceAccountUser"
     else
         echo "Google Service Account $GSA_NAME already exists."
         add_iam_binding $PROJECT_ID "serviceAccount:$GSA_EMAIL" "roles/aiplatform.user"
+        add_iam_binding $PROJECT_ID "serviceAccount:$GSA_EMAIL" "roles/cloudbuild.builds.builder"
+        add_iam_binding $PROJECT_ID "serviceAccount:$GSA_EMAIL" "roles/container.developer"
+        add_iam_binding $PROJECT_ID "serviceAccount:$GSA_EMAIL" "roles/artifactregistry.writer"
+        add_iam_binding $PROJECT_ID "serviceAccount:$GSA_EMAIL" "roles/iam.serviceAccountUser"
     fi
 
     if ! kubectl get sa $KSA_NAME -n $NAMESPACE &>/dev/null; then
