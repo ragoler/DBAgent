@@ -38,6 +38,7 @@ def mock_agent_runner():
     # Restore original runner
     agent_manager.runner = original_runner
 
+@pytest.mark.e2e
 def test_chat_streaming_end_to_end():
     """
     Simulates a full end-to-end chat request and strictly verifies the streaming behavior.

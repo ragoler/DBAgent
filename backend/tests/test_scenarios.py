@@ -90,6 +90,7 @@ async def run_query(runner, query):
     # Edge Cases / Unknowns
     ("Who is the pilot for flight 999?", ["no", "not found", "exists", "does not exist", "unable to find", "flight 999", "couldn't find", "no results"]),
 ])
+@pytest.mark.e2e
 @pytest.mark.anyio
 async def test_user_question_scenarios(runner, query, expected_keywords, setup_test_data):
     """

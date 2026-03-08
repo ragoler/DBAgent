@@ -1,6 +1,8 @@
+import pytest
 from backend.core.database import get_session, get_engine, Base
 from sqlalchemy import text
 
+@pytest.mark.integration
 def test_db_connection():
     """Verify that we can connect to the database and create a session."""
     db = get_session()
@@ -11,6 +13,7 @@ def test_db_connection():
     finally:
         db.close()
 
+@pytest.mark.unit
 def test_base_metadata():
     """Verify that our Base metadata is correctly initialized."""
     assert Base.metadata is not None

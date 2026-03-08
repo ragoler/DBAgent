@@ -12,6 +12,7 @@ class ColumnMetadata(BaseModel):
 class TableMetadata(BaseModel):
     name: str
     description: Optional[str] = None
+    domain: Optional[str] = None
     columns: List[ColumnMetadata]
 
 class SchemaMetadata(BaseModel):

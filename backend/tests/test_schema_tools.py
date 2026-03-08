@@ -1,4 +1,6 @@
 import pytest
+pytestmark = pytest.mark.unit
+
 from backend.core.tools.schema_tools import describe_table, list_tables
 from backend.core.schema_registry import schema_registry
 from backend.core.schema_parser import SchemaMetadata, TableMetadata, ColumnMetadata

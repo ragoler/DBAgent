@@ -1,4 +1,6 @@
 import pytest
+pytestmark = pytest.mark.unit
+
 from fastapi.testclient import TestClient
 from backend.main import app
 import json

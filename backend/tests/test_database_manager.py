@@ -1,4 +1,6 @@
 import pytest
+pytestmark = pytest.mark.unit
+
 from backend.core.database import register_database, get_engine, database_context_var, _engines
 
 def test_engine_switching():

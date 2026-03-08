@@ -1,4 +1,6 @@
 import pytest
+pytestmark = pytest.mark.unit
+
 import json
 import re
 from backend.agents.adk.reporter import create_reporter_agent
