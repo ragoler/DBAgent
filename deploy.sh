@@ -197,6 +197,7 @@ if [ "$SKIP_INFRA" == "false" ]; then
         add_iam_binding $PROJECT_ID "serviceAccount:$GSA_EMAIL" "roles/artifactregistry.writer"
         add_iam_binding $PROJECT_ID "serviceAccount:$GSA_EMAIL" "roles/iam.serviceAccountUser"
         add_iam_binding $PROJECT_ID "serviceAccount:$GSA_EMAIL" "roles/logging.logWriter"
+        add_iam_binding $PROJECT_ID "serviceAccount:$GSA_EMAIL" "roles/storage.admin"
     else
         echo "Google Service Account $GSA_NAME already exists."
         add_iam_binding $PROJECT_ID "serviceAccount:$GSA_EMAIL" "roles/aiplatform.user"
@@ -205,6 +206,7 @@ if [ "$SKIP_INFRA" == "false" ]; then
         add_iam_binding $PROJECT_ID "serviceAccount:$GSA_EMAIL" "roles/artifactregistry.writer"
         add_iam_binding $PROJECT_ID "serviceAccount:$GSA_EMAIL" "roles/iam.serviceAccountUser"
         add_iam_binding $PROJECT_ID "serviceAccount:$GSA_EMAIL" "roles/logging.logWriter"
+        add_iam_binding $PROJECT_ID "serviceAccount:$GSA_EMAIL" "roles/storage.admin"
     fi
 
     if ! kubectl get sa $KSA_NAME -n $NAMESPACE &>/dev/null; then
