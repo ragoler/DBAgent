@@ -1,0 +1,47 @@
+steps:
+  # 1. Install dependencies
+  - name: 'python:3.11'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        pip install --upgrade pip
+        pip install -r backend/requirements.txt
+        pip install pytest httpx
+
+  # 2. Run unit and integration tests
+  - name: 'python:3.11'
+    entrypoint: 'bash'
+    env:
+      - 'GEMINI_API_KEY=dummy-key-for-tests'
+    args:
+      - '-c'
+      - |
+        pytest -m "not e2e"
+
+  # 3. Build docker image and deploy using predefined script
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        chmod +x deploy.sh
+        # Force the deploy script to use the dev namespace and skip the API/IAM enabling steps
+        ./deploy.sh --namespace dev --no-infra
+
+  # 4. Run E2E Network Tests against the deployed Dev environment
+  - name: 'python:3.11'
+    entrypoint: 'bash'
+    # Normally the deploy script output gives you an IP you'd dynamically pass here
+    # For now, assuming the E2E script is robust enough to query the k8s service or proxy
+    args:
+      - '-c'
+      - |
+        echo "Waiting 15 seconds for pod readiness..."
+        sleep 15
+        export DB_AGENT_API_URL=$_DEV_API_URL
+        pytest backend/tests/test_true_e2e.py -v
+
+options:
+  machineType: 'E2_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY

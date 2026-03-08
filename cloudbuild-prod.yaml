@@ -1,0 +1,14 @@
+steps:
+  # Build docker image and deploy to prod namespace
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        chmod +x deploy.sh
+        # Force the deploy script to use the prod namespace
+        ./deploy.sh --namespace prod --no-infra
+
+options:
+  machineType: 'E2_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY
