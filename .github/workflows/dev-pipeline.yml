@@ -30,6 +30,8 @@ jobs:
           pip install pytest httpx
         
       - name: Run Unit and Integration Tests
+        env:
+          GEMINI_API_KEY: "dummy-key-for-tests"
         run: |
           pytest -m "not e2e"
 
