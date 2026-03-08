@@ -10,6 +10,7 @@ steps:
         pip install --upgrade pip
         pip install -r backend/requirements.txt
         pip install pytest httpx
+        export PYTHONPATH=.
         pytest -m "not e2e"
 
   # 3. Build docker image and deploy using predefined script
@@ -34,6 +35,7 @@ steps:
         echo "Waiting 15 seconds for pod readiness..."
         sleep 15
         export DB_AGENT_API_URL=$_DEV_API_URL
+        export PYTHONPATH=.
         pytest backend/tests/test_true_e2e.py -v
 
 options:
