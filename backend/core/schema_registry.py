@@ -25,23 +25,8 @@ class SchemaRegistry:
             db_id = next(iter(self._schemas))
 
         if db_id and db_id in self._schemas:
-            from backend.core.semantic_clustering import SemanticClusterer
-            tables = self._schemas[db_id].tables
-            # Automatically apply semantic clustering to populate missing domains
-            SemanticClusterer.cluster_tables(tables)
-            return tables
+            return self._schemas[db_id].tables
         return []
-
-    def get_tables_by_domain(self, db_id: Optional[str] = None) -> Dict[str, List[TableMetadata]]:
-        """Returns tables grouped by their domain for the active database."""
-        tables = self.get_tables(db_id)
-        grouped: Dict[str, List[TableMetadata]] = {}
-        for table in tables:
-            domain = table.domain or "Default"
-            if domain not in grouped:
-                grouped[domain] = []
-            grouped[domain].append(table)
-        return grouped
 
     def get_table_names(self, db_id: Optional[str] = None) -> List[str]:
         """Returns a list of all table names for the active database."""

@@ -8,21 +8,17 @@ from backend.agents.adk.reporter import create_reporter_agent
 
 logger = logging.getLogger(__name__)
 
-def create_sql_sequence_agent(model_name: str, domain_name: str = "General", table_names: List[str] = None) -> SequentialAgent:
+def create_sql_sequence_agent(model_name: str) -> SequentialAgent:
     """
-    Creates a Sequence Agent that follows a 4-step SQL generation workflow, scoped to a specific domain if provided.
+    Creates a Sequence Agent that follows a 4-step SQL generation workflow.
     """
-    
-    domain_context = ""
-    if table_names:
-        domain_context = f"\nYou are the specialized agent for the '{domain_name}' domain. You only have access to the following tables: {', '.join(table_names)}. Do not attempt to query or gather information about other tables outside your domain.\n"
     
     # Step 1: Planner
     planner = LlmAgent(
         model=model_name,
-        name=f"SqlPlanner_{domain_name.replace(' & ', '').replace(' ', '')}",
-        description=f"Identifies required tables and columns for a query in the '{domain_name}' domain.",
-        instruction=f"{domain_context}Review the user's question and use 'list_tables' and 'describe_table' to "
+        name="SqlPlanner",
+        description="Identifies required tables and columns for a query.",
+        instruction="Review the user's question and use 'list_tables' and 'describe_table' to "
                     "discover the necessary database structure. Your output should clearly list "
                     "the tables and columns needed for the query. IMPORTANT: If the user asks "
                     "for 'all flights' or general data, be sure to include descriptive columns "
@@ -73,6 +69,6 @@ def create_sql_sequence_agent(model_name: str, domain_name: str = "General", tab
     narrator = create_reporter_agent(model_name)
 
     return SequentialAgent(
-        name=f"SqlSequenceWorkflow_{domain_name.replace(' & ', '').replace(' ', '')}",
+        name="SqlSequenceWorkflow",
         sub_agents=[planner, generator, executor, narrator]
     )
