@@ -32,10 +32,10 @@ steps:
         gcloud container clusters get-credentials adk-cluster --region us-west1 --project ragoler-gke-dev
         echo "Waiting up to 60s for LoadBalancer IP..."
         for i in {1..12}; do
-          IP=$(kubectl get svc db-agent-service -n dev -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
-          if [ -n "$IP" ]; then
-            echo "Found IP: $IP"
-            echo "http://$IP" > workspace_url.txt
+          IP=$$(kubectl get svc db-agent-service -n dev -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
+          if [ -n "$$IP" ]; then
+            echo "Found IP: $$IP"
+            echo "http://$$IP" > workspace_url.txt
             break
           fi
           sleep 5
@@ -55,7 +55,7 @@ steps:
         pip install -r backend/requirements.txt
         # Wait extra time for the application to boot
         sleep 10
-        export DB_AGENT_API_URL=$(cat workspace_url.txt)
+        export DB_AGENT_API_URL=$$(cat workspace_url.txt)
         export PYTHONPATH=.
         pytest backend/tests/test_true_e2e.py -v
 
