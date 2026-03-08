@@ -4,6 +4,7 @@ from backend.main import app
 
 client = TestClient(app)
 
+@pytest.mark.integration
 def test_list_databases():
     response = client.get("/databases")
     assert response.status_code == 200

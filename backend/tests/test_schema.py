@@ -1,5 +1,7 @@
-import os
 import pytest
+pytestmark = pytest.mark.unit
+
+import os
 from backend.core.schema_parser import SchemaParser
 from backend.core.schema_registry import schema_registry
 

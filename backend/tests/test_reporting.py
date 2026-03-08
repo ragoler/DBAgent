@@ -55,6 +55,7 @@ async def run_reporter(runner, query, data):
             response_text += chunk.text
     return response_text
 
+@pytest.mark.unit
 @pytest.mark.anyio
 async def test_reporting_table_format(runner):
     """Verify that the reporter uses a Markdown table for many rows."""
@@ -70,6 +71,7 @@ async def test_reporting_table_format(runner):
     assert "origin" in response.lower()
     assert "destination" in response.lower()
 
+@pytest.mark.unit
 @pytest.mark.anyio
 async def test_reporting_list_format(runner):
     """Verify that the reporter uses a list for few rows."""
@@ -79,6 +81,7 @@ async def test_reporting_list_format(runner):
     assert "LHR" in response
     assert "CDG" in response
 
+@pytest.mark.unit
 @pytest.mark.anyio
 async def test_reporting_no_data(runner):
     """Verify polite response when no data is found."""

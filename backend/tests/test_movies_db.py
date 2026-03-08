@@ -3,6 +3,7 @@ from backend.core.database import database_context_var, get_session
 from sqlalchemy import text
 import os
 
+@pytest.mark.integration
 @pytest.mark.skipif(not os.path.exists("data/movies.db"), reason="Movies DB not initialized")
 def test_movies_query():
     # Switch context to movies

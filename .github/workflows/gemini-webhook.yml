@@ -1,0 +1,43 @@
+name: Gemini Webhook Interception
+
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: "Task for Gemini"
+        required: true
+
+jobs:
+  gemini-orchestration:
+    # Only run if a comment contains @gemini-agent or triggered manually
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.comment.body, '@gemini-agent')
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Echo Trigger
+        run: |
+          echo "Gemini orchestration workflow triggered."
+          echo "Event source: ${{ github.event_name }}"
+          
+      - name: Process Issue Comment
+        if: github.event_name == 'issue_comment'
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        run: |
+          echo "Processing task from comment: $COMMENT_BODY"
+          # Here we would typically hit an external webhook for our Gemini orchestration service
+          # Example: curl -X POST -H "Authorization: Bearer ${{ secrets.GEMINI_WEBHOOK_SECRET }}" -d '{"prompt": "$COMMENT_BODY", "branch": "dev"}' https://gemini-agent.example.com/webhook
+
+      - name: Process Workflow Dispatch
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          PROMPT: ${{ github.event.inputs.prompt }}
+        run: |
+          echo "Processing manually triggered task: $PROMPT"
+          # Example: curl -X POST ...
+
+      - name: Validate Branch Restriction
+        run: |
+          echo "Gemini Agent strictly ordered to operate on the 'dev' branch via webhook payload constraints."

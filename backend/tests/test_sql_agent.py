@@ -43,17 +43,20 @@ def setup_test_data():
 
 # --- Unit Tests for Tools ---
 
+@pytest.mark.unit
 def test_validate_sql_safety():
     assert validate_sql("SELECT * FROM flights") == "VALID"
     assert "Error: Mutable operation" in validate_sql("DROP TABLE flights")
     assert "Error: Mutable operation" in validate_sql("DELETE FROM flights")
     assert "Error: Mutable operation" in validate_sql("INSERT INTO flights VALUES (3, 'Berlin')")
 
+@pytest.mark.integration
 def test_execute_sql_success():
     result = execute_sql("SELECT destination FROM flights WHERE id = 1")
     assert "LHR" in result
     assert "Returned 1 rows" in result
 
+@pytest.mark.integration
 def test_execute_sql_blocked():
     result = execute_sql("DELETE FROM flights WHERE id = 1")
     assert "Error: Mutable operation" in result

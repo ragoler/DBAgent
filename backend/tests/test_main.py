@@ -4,11 +4,13 @@ from backend.main import app
 
 client = TestClient(app)
 
+@pytest.mark.unit
 def test_health_check():
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"status": "healthy"}
 
+@pytest.mark.integration
 def test_chat_streaming_content():
     """Verify that the chat endpoint actually streams content."""
     payload = {"message": "Hello, what can you do?", "user_id": "test_u1", "session_id": "test_s1"}
@@ -20,6 +22,7 @@ def test_chat_streaming_content():
     assert len(response.text) > 0
     print(f"\nAggregated content: {response.text}")
 
+@pytest.mark.e2e
 def test_chat_multiple_messages_same_session():
     """Verify that multiple messages can be sent in the same session and stored."""
     session_id = "persistent_session"

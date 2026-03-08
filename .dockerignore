@@ -1,0 +1,29 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+.tox/
+.coverage
+.cache
+.pytest_cache/
+
+# OS
+.DS_Store
+
+# Temporary & Docs
+tmp/
+plans/
+*.swp
+*.pdf
+README.md
+GEMINI.md
