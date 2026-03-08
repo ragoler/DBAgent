@@ -1,15 +1,5 @@
 steps:
-  # 1. Install dependencies
-  - name: 'python:3.11'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        pip install --upgrade pip
-        pip install -r backend/requirements.txt
-        pip install pytest httpx
-
-  # 2. Run unit and integration tests
+  # 1. Install dependencies and run unit/integration tests
   - name: 'python:3.11'
     entrypoint: 'bash'
     env:
@@ -17,6 +7,9 @@ steps:
     args:
       - '-c'
       - |
+        pip install --upgrade pip
+        pip install -r backend/requirements.txt
+        pip install pytest httpx
         pytest -m "not e2e"
 
   # 3. Build docker image and deploy using predefined script
@@ -29,7 +22,7 @@ steps:
         # Force the deploy script to use the dev namespace and skip the API/IAM enabling steps
         ./deploy.sh --namespace dev --no-infra
 
-  # 4. Run E2E Network Tests against the deployed Dev environment
+  # 3. Run E2E Network Tests against the deployed Dev environment
   - name: 'python:3.11'
     entrypoint: 'bash'
     # Normally the deploy script output gives you an IP you'd dynamically pass here
@@ -37,6 +30,7 @@ steps:
     args:
       - '-c'
       - |
+        pip install pytest httpx
         echo "Waiting 15 seconds for pod readiness..."
         sleep 15
         export DB_AGENT_API_URL=$_DEV_API_URL
