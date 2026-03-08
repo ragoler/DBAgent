@@ -76,8 +76,6 @@ if [[ "$NAMESPACE" != "dev" && "$NAMESPACE" != "prod" ]]; then
     exit 1
 fi
 
-PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
-COMPUTE_SERVICE_ACCOUNT="$PROJECT_NUMBER-compute@developer.gserviceaccount.com"
 GSA_EMAIL="$GSA_NAME@$PROJECT_ID.iam.gserviceaccount.com"
 KSA_NAME="dbagent-ksa-$NAMESPACE"
 
@@ -141,6 +139,9 @@ if [ "$SKIP_INFRA" == "false" ]; then
         done
         echo "Warning: Failed to add IAM binding $3 to $2"
     }
+
+    PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
+    COMPUTE_SERVICE_ACCOUNT="$PROJECT_NUMBER-compute@developer.gserviceaccount.com"
 
     add_iam_binding $PROJECT_ID "serviceAccount:$COMPUTE_SERVICE_ACCOUNT" "roles/storage.admin"
     add_iam_binding $PROJECT_ID "serviceAccount:$COMPUTE_SERVICE_ACCOUNT" "roles/storage.objectViewer"
