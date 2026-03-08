@@ -154,6 +154,8 @@ if [ "$SKIP_INFRA" == "false" ]; then
 
     add_iam_binding $PROJECT_ID "serviceAccount:$CLOUD_BUILD_SA_LEGACY" "roles/artifactregistry.writer"
     add_iam_binding $PROJECT_ID "serviceAccount:$CLOUD_BUILD_SA_MODERN" "roles/artifactregistry.writer"
+    add_iam_binding $PROJECT_ID "serviceAccount:$CLOUD_BUILD_SA_LEGACY" "roles/storage.admin"
+    add_iam_binding $PROJECT_ID "serviceAccount:$CLOUD_BUILD_SA_MODERN" "roles/storage.admin"
 
     if ! gcloud artifacts repositories describe $REPO_NAME --location=$REGION &>/dev/null; then
         echo "Creating Artifact Registry repository..."
