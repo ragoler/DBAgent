@@ -173,8 +173,8 @@ fi
 
 if [ "$SKIP_INFRA" == "false" ]; then
     echo "Creating/Updating Kubernetes Secret from .env..."
-    if [ -f .env ]; then
-        cp .env .env.tmp
+    if [ -f backend/.env ]; then
+        cp backend/.env .env.tmp
         if [[ "$OSTYPE" == "darwin"* ]]; then
             sed -i "" "s/GOOGLE_CLOUD_PROJECT=.*/GOOGLE_CLOUD_PROJECT=$PROJECT_ID/" .env.tmp
         else
