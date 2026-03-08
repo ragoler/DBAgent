@@ -214,6 +214,13 @@ if [ "$SKIP_INFRA" == "false" ]; then
         kubectl create serviceaccount $KSA_NAME --namespace $NAMESPACE
     fi
 
+    if ! kubectl get rolebinding deployer-binding -n $NAMESPACE &>/dev/null; then
+        echo "Creating Kubernetes RoleBinding for GSA in namespace $NAMESPACE..."
+        kubectl create rolebinding deployer-binding \
+            --clusterrole=edit \
+            --user="$GSA_EMAIL" \
+            --namespace=$NAMESPACE
+    fi
     echo "Binding GSA to KSA via Workload Identity for $NAMESPACE..."
     gcloud iam service-accounts add-iam-policy-binding $GSA_EMAIL \
         --role="roles/iam.workloadIdentityUser" \
