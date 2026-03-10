@@ -171,32 +171,33 @@ This plan outlines the milestones for building the Database Agentic System. Each
         - [x] Select the "movies" database and ask a query like "How many movies were released in the 1990s?".
         - [x] Switch back to the "flights" database and verify it still works correctly.
 
-## Milestone 10: GKE Deployment
-- [ ] Objectives
-    - [ ] Separate the test to tests that need to run in github actions and tests that need to run in the GKE cluster.
-    - [ ] Deploy the application to Google Kubernetes Engine (GKE).
-    - [ ] Automate infrastructure creation and deployment.
-    - [ ] Create a CI/CD pipeline for automated deployments.
-    - [ ] There should be a new branch called "dev".
-    - [ ] The "dev" branch should be the default branch
-    - [ ] The "main" branch should be protected
-    - [ ] The "dev" branch should have a webhook to deploy to the GKE cluster under namespace "dev" 
-    - [ ] The "main" branch should have a webhook to deploy to the GKE cluster under namespace "prod"
-    -  [ ] When there is a new push to "dev", the tests need to run in github actions   and if they pass, the application should be deployed to the GKE cluster under namespace "dev"
-    -  [ ] When there is a new push to "main", the tests need to run in github actions and if they pass, the application should be deployed to the GKE cluster under namespace "prod"
-    - [ ]  After deployment to "dev", the end to end tests need to run and if they pass, submit a pull request to "main" branch
-    - [ ] Add an option to tag in github to trigger Gemini to run and implement work in the "dev" branch
-    - [ ] Gemini should not be able to run on the main branch since the only way to deploy to main is to manually approve the pull request 
-- [ ] Tasks
-    - [ ] **Containerization**
-        - [ ] Create `Dockerfile` and `.dockerignore`.
-    - [ ] **Infrastructure**
-        - [ ] Create `infra.sh` to provision GKE cluster.
-    - [ ] **Deployment**
-        - [ ] Create `k8s/deployment.yaml` and `k8s/service.yaml`.
-        - [ ] Create `deploy.sh` for Cloud Build and kubectl application.
-- [ ] Tests
-    - [ ] Manual verification of build, infra creation, and deployment.
+## Milestone 10: GKE Deployment [COMPLETE]
+- [x] Objectives
+    - Build the needed infra in GKE. The goal is to use the existing cluster that already exists but use the new namespaces "dev" and "prod". [x]
+    - [x] Separate the test to tests that need to run in github actions and tests that need to run in the GKE cluster.
+    - [x] Deploy the application to Google Kubernetes Engine (GKE).
+    - [x] Automate infrastructure creation and deployment.
+    - [x] Create a CI/CD pipeline for automated deployments.
+    - [x] There should be a new branch called "dev".
+    - [x] The "dev" branch should be the default branch
+    - [x] The "main" branch should be protected
+    - [x] The "dev" branch should have a webhook to deploy to the GKE cluster under namespace "dev" 
+    - [x] The "main" branch should have a webhook to deploy to the GKE cluster under namespace "prod"
+    -  [x] When there is a new push to "dev", the tests need to run in github actions   and if they pass, the application should be deployed to the GKE cluster under namespace "dev"
+    -  [x] When there is a new push to "main", the tests need to run in github actions and if they pass, the application should be deployed to the GKE cluster under namespace "prod"
+    - [x]  After deployment to "dev", the end to end tests need to run and if they pass, submit a pull request to "main" branch
+    - [x] Add an option to tag in github to trigger Gemini to run and implement work in the "dev" branch
+    - [x] Gemini should not be able to run on the main branch since the only way to deploy to main is to manually approve the pull request 
+- [x] Tasks
+    - [x] **Containerization**
+        - [x] Create `Dockerfile` and `.dockerignore`.
+    - [x] **Infrastructure**
+        - [x] Create `infra.sh` to provision GKE cluster.
+    - [x] **Deployment**
+        - [x] Create `k8s/deployment.yaml` and `k8s/service.yaml`.
+        - [x] Create `deploy.sh` for Cloud Build and kubectl application.
+- [x] Tests
+    - [x] Manual verification of build, infra creation, and deployment.
 
 ## Milestone 11: Semantic Agent Factory
 - [ ] Objectives
