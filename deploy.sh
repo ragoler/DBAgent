@@ -178,11 +178,6 @@ if [ "$SKIP_INFRA" == "false" ]; then
     echo "Creating/Updating Kubernetes Secret from .env..."
     if [ -f backend/.env ]; then
         cp backend/.env .env.tmp
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            sed -i "" "s/GOOGLE_CLOUD_PROJECT=.*/GOOGLE_CLOUD_PROJECT=$PROJECT_ID/" .env.tmp
-        else
-            sed -i "s/GOOGLE_CLOUD_PROJECT=.*/GOOGLE_CLOUD_PROJECT=$PROJECT_ID/" .env.tmp
-        fi
         kubectl create secret generic db-agent-secrets --from-env-file=.env.tmp --namespace $NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
         rm .env.tmp
     else
