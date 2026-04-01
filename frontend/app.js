@@ -25,21 +25,24 @@ async function fetchDatabases() {
         
         databaseSelect.innerHTML = '';
         databases.forEach(db => {
-            const option = document.createElement('option');
-            option.value = db.id;
-            option.textContent = db.name;
-            databaseSelect.appendChild(option);
+            const option = new Option(db.name, db.id);
+            databaseSelect.add(option);
         });
         
         // Select first one by default if available
         if (databases.length > 0) {
             databaseSelect.value = databases[0].id;
         } else {
-             databaseSelect.innerHTML = '<option disabled>No databases found</option>';
+            const emptyOption = new Option('No databases found', '', true, true);
+            emptyOption.disabled = true;
+            databaseSelect.add(emptyOption);
         }
     } catch (e) {
         console.error("Error loading databases:", e);
-        databaseSelect.innerHTML = '<option disabled>Error loading databases</option>';
+        databaseSelect.innerHTML = '';
+        const errOption = new Option('Error loading databases', '', true, true);
+        errOption.disabled = true;
+        databaseSelect.add(errOption);
     }
 }
 
@@ -351,18 +354,37 @@ async function sendMessage() {
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
+        let buffer = '';
 
         while (true) {
             const { value, done } = await reader.read();
-            if (done) break;
+            if (done) {
+                if (buffer.trim().startsWith('data: ')) {
+                    try {
+                        const data = JSON.parse(buffer.trim().slice(6));
+                        if (data.error) {
+                            agentTextContainer.innerHTML += `<br><span style="color:#f87171">Error: ${data.error}</span>`;
+                        }
+                    } catch (e) {}
+                }
+                break;
+            }
 
-            const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split('\n');
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop(); // Keep the last incomplete line
 
             for (const line of lines) {
-                if (line.startsWith('data: ')) {
+                const trimmed = line.trim();
+                if (trimmed.startsWith('data: ')) {
                     try {
-                        const data = JSON.parse(line.slice(6));
+                        const data = JSON.parse(trimmed.slice(6));
+
+                        if (data.error) {
+                            agentTextContainer.innerHTML += `<br><span style="color:#f87171">Error: ${data.error}</span>`;
+                            chatMessages.scrollTop = chatMessages.scrollHeight;
+                            continue;
+                        }
 
                         if (data.trace) {
                             handleTrace(data.trace);
