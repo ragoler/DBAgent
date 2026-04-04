@@ -38,3 +38,5 @@ The project will be developed in a series of 10-15 detailed milestones. Each mil
 3.  **Documentation:** Update all relevant documentation.
 
 This iterative process ensures that the project remains robust, well-tested, and well-documented at every stage.
+
+Fix deploy.sh script to use the correct IAM roles and permissions for Cloud Build and Artifact Registry.
